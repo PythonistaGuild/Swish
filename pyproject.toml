@@ -1,0 +1,50 @@
+[tool.poetry]
+name        = "Swish"
+version     = "0.0.1a"
+description = ""    # Fill in later
+license     = ""    # Fill in later
+authors     = []    # Fill in later
+readme      = ""    # Fill in later
+
+
+[tool.poetry.dependencies]
+python  = "^3.10.0"
+
+aiohttp = "^3.8.0"
+toml    = "^0.10.0"
+
+
+[tool.poetry.dev-dependencies]
+isort = "*"
+
+
+[tool.isort]
+line_length                 = 120
+multi_line_output           = 3
+lines_after_imports         = 2
+combine_star                = true
+include_trailing_comma      = true
+star_first                  = true
+known_local_folder          = ["src"]
+import_heading_stdlib       = "stdlib"
+import_heading_thirdparty   = "packages"
+import_heading_firstparty   = "local"
+import_heading_localfolder  = "local"
+
+
+[tool.pyright]
+include                 = ["src"]
+exclude                 = []
+verboseOutput           = false
+pythonVersion           = "3.10"
+typeCheckingMode        = "strict"  # wonder how this'll go, i disabled all the rediculousness below sooo...might be fine.
+useLibraryCodeForTypes  = true
+
+reportMissingTypeStubs = false
+reportPrivateImportUsage = false
+reportPrivateUsage = false
+reportUnknownMemberType = false
+reportFunctionMemberAccess = false
+reportUnknownArgumentType = false
+reportImportCycles = false
+reportConstantRedefinition = false
