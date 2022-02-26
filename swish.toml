@@ -1,0 +1,4 @@
+[SERVER]
+host = "localhost"
+port = 3555
+password = "helloworld!"
