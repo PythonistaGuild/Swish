@@ -23,7 +23,9 @@ class Server(web.Application):
 
         self.add_routes(
             [
-                web.get('/', self.websocket_handler)
+                web.get('/', self.websocket_handler),
+                web.get('/search', self.search_tracks),
+                web.get('/debug', self.debug_stats)
             ]
         )
 
@@ -57,6 +59,12 @@ class Server(web.Application):
         async for message in ws:
             message: aiohttp.WSMessage
             print(message.data)
+
+    async def search_tracks(self):
+        pass
+
+    async def debug_stats(self):
+        pass
 
     async def _run_app(self):
         host_ = CONFIG['SERVER']['host']
