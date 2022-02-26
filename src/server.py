@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 # stdlib
+import asyncio
 import logging
+import uuid
 
 # packages
+import aiohttp
 from aiohttp import web
 
 # local
@@ -39,10 +42,21 @@ class Server(web.Application):
             logger.error(f'Authorization failed for request from:: {request.remote} with Authorization: {auth}')
             raise web.HTTPUnauthorized
 
+        if not request.headers.get('Client-ID'):
+            logger.error('Unable to compleeete websocket handshake as your Client-ID header is missing.')
+            raise web.HTTPBadRequest
+
+        if not request.headers.get('User-Agent'):
+            logger.warn('No User-Agent header provided. Please provide a User-Agent in future connections.')
+
+        UUID = uuid.uuid4()
+        self.websockets[UUID] = {'websocket': ws, 'headers': request.headers}
+
         logger.info(f'Successful websocket handshake completed from:: {request.remote}.')
 
         async for message in ws:
-            pass
+            message: aiohttp.WSMessage
+            print(message.data)
 
     async def _run_app(self):
         host_ = CONFIG['SERVER']['host']
