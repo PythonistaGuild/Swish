@@ -1,7 +1,12 @@
+from __future__ import annotations
+
+# stdlib
 import datetime
 import logging
 
-from colorama import init as c_init, Fore, Back, Style
+# packages
+from colorama import Back, Fore, Style
+from colorama import init as c_init
 
 
 c_init(autoreset=True)

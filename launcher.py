@@ -1,6 +1,10 @@
+from __future__ import annotations
+
+# stdlib
 import asyncio
 import logging
 
+# local
 import src
 
 

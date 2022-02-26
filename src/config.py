@@ -1,6 +1,11 @@
+from __future__ import annotations
+
+# stdlib
 import logging
 
+# packages
 import toml
+
 
 logger = logging.getLogger('swish')
 

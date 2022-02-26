@@ -1,7 +1,12 @@
+from __future__ import annotations
+
+# stdlib
 import logging
 
+# packages
 from aiohttp import web
 
+# local
 from .config import CONFIG
 
 
