@@ -12,8 +12,7 @@ logger = logging.getLogger('swish')
 logger.setLevel(logging.DEBUG)
 logger.addHandler(src.STDOUT_LOGGER())
 
-
-print(f"""
+BANNER = """
 ######################################################
 ##   (`-').->     .->     _      (`-').-> (`-').->  ##
 ##   ( OO)_   (`(`-')/`) (_)     ( OO)_   (OO )__   ##
@@ -25,8 +24,8 @@ print(f"""
 ##   `-----' `--'   '--' `--'    `-----' `--' `--'  ##
 ## VERSION: 0.0.1a - BUILD: N/A                     ##
 ###################################################### 
-""")
-
+"""
+print(BANNER)
 
 loop = asyncio.new_event_loop()
 app = src.Server()
