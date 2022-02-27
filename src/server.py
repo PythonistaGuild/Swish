@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 # stdlib
+import asyncio
 import logging
 import uuid
 from collections.abc import Awaitable, Callable
@@ -9,6 +10,7 @@ from typing import Any
 # packages
 import aiohttp
 import aiohttp.web
+import discord
 
 # local
 from .config import CONFIG
@@ -83,9 +85,9 @@ class Server(aiohttp.web.Application):
             logger.error(f'Authorization failed for request from:: {request.remote} with Authorization: {auth}')
             raise aiohttp.web.HTTPUnauthorized
 
-        client_id = request.headers.get('Client-ID')
-        if not client_id:
-            logger.error('Unable to complete websocket handshake as your Client-ID header is missing.')
+        client_token = request.headers.get('Client-Token')
+        if not client_token:
+            logger.error('Unable to complete websocket handshake as your Client-Token header is missing.')
             raise aiohttp.web.HTTPBadRequest
 
         if not request.headers.get('User-Agent'):
@@ -93,10 +95,22 @@ class Server(aiohttp.web.Application):
 
         connection_id = str(uuid.uuid4())
 
-        websocket['Client-ID'] = client_id
+        try:
+            logger.info('Logging into discord with provided token...')
+
+            client = discord.Client()
+            await client.login(client_token)
+
+            asyncio.create_task(client.connect())
+        except discord.DiscordException:
+            logger.error('Unable to complete websocket handshake, improper or invalid Client-Token passed.')
+            raise aiohttp.web.HTTPUnauthorized
+
+        websocket['client'] = client
         websocket['Connection-ID'] = connection_id
         self.connections[connection_id] = websocket
 
+        await client.wait_until_ready()
         logger.info(f'Successful websocket handshake completed from:: {request.remote}.')
 
         async for message in websocket:  # type: aiohttp.WSMessage
@@ -120,12 +134,21 @@ class Server(aiohttp.web.Application):
 
     async def connect(self, ws: Websocket, data: JSON) -> None:
 
-        guild_id = data['guild_id']
+        try:
+            guild_id = int(data['guild_id'])
+            channel_id = int(data['channel_id'])
+        except ValueError:
+            logger.error('Invalid ID passed for connect.')
+            return
 
-        player = Player(guild_id)
+        player = Player(guild_id, client=ws['client'])
 
-        await player.connect()
-        ws["players"][guild_id] = player
+        await player.connect(channel_id)
+
+        try:
+            ws["players"][guild_id] = player
+        except KeyError:
+            ws['players'] = {guild_id: player}
 
     async def destroy(self, ws: Websocket, data: JSON) -> None:
 
