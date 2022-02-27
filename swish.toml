@@ -2,3 +2,6 @@
 host = "localhost"
 port = 3555
 password = "helloworld!"
+
+[IP]
+blocks = ['2001:470:5521::/48', '1001:470:5521::/48']
