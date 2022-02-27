@@ -10,12 +10,14 @@ from typing import Any
 # packages
 import aiohttp
 import aiohttp.web
+import aiohttp.web_response
 import discord
 
 # local
 from .config import CONFIG
 from .player import Player
 from .rotator import IPRotator
+from .search import Search
 
 
 logger = logging.getLogger('swish')
@@ -31,6 +33,7 @@ class Server(aiohttp.web.Application):
         super().__init__()
 
         self.rotator = IPRotator()
+        self.searcher = Search()
 
         self.WS_OP_HANDLERS: dict[str, OpHandler] = {
             'connect':         self.connect,
@@ -95,6 +98,8 @@ class Server(aiohttp.web.Application):
 
         connection_id = str(uuid.uuid4())
 
+        await asyncio.sleep(5)
+
         try:
             logger.info('Logging into discord with provided token...')
 
@@ -141,7 +146,7 @@ class Server(aiohttp.web.Application):
             logger.error('Invalid ID passed for connect.')
             return
 
-        player = Player(guild_id, client=ws['client'])
+        player = Player(guild_id, server=self, client=ws['client'])
 
         await player.connect(channel_id)
 
@@ -162,13 +167,16 @@ class Server(aiohttp.web.Application):
 
     async def play(self, ws: Websocket, data: JSON) -> None:
 
-        guild_id = data['guild_id']
+        try:
+            guild_id = int(data['guild_id'])
+        except ValueError:
+            logger.error('Invalid guild_id passed for play.')
 
         player: Player | None = ws['players'][guild_id]
         if not player:
             return
 
-        player.play(
+        await player.play(
             data['track_id'],
             start_position=data.get('start_position', None),
             end_position=data.get('end_position', None),
@@ -190,7 +198,10 @@ class Server(aiohttp.web.Application):
     # Rest handlers
 
     async def search_tracks(self, request: aiohttp.web.Request) -> aiohttp.web.Response:
-        raise NotImplementedError
+        search = request.query.get('query')
+
+        data = await self.searcher.search_youtube(search, server=self)
+        return aiohttp.web_response.json_response(data=data, status=200)
 
     async def debug_stats(self, request: aiohttp.web.Request) -> aiohttp.web.Response:
         raise NotImplementedError

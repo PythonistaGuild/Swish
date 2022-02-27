@@ -12,10 +12,11 @@ logger: logging.Logger = logging.getLogger('player')
 
 class Player:
 
-    def __init__(self, guild_id: int, *, client: discord.Client) -> None:
+    def __init__(self, guild_id: int, *, server, client: discord.Client) -> None:
         self.guild_id: int = guild_id
         self.channel_id: int = None  # type: ignore
 
+        self.server = server
         self._client = client
         self.vc: VoiceClient
 
@@ -34,13 +35,11 @@ class Player:
         logger.info(f'Attempting to join channel: {channel_id} - {channel.name}')
         self.vc = await channel.connect(cls=VoiceClient)
 
-        self.vc.play('fire.mp3')
-
     async def destroy(self) -> None:
         # TODO: ext-native-voice stuff
         pass
 
-    def play(
+    async def play(
         self,
         track_id: str,
         /,
@@ -50,7 +49,17 @@ class Player:
         replace: bool | None = None,
     ) -> None:
 
+        if not self.vc:
+            logger.error('No voice channel to play for this guild. Try connecting to a channel first.')
+            return
+
         self.current_track_id = track_id
+
+        decoded = self.server.searcher.decode_track(track_id)
+        track = await self.server.searcher.search_youtube(decoded['id'], raw=True)[0]
+
+        logger.info(f'Request to play track: {track_id} - {decoded["title"]}')
+        self.vc.play(track['url'])
 
     def stop(self) -> None:
         pass
