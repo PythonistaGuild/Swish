@@ -10,28 +10,43 @@ import aiohttp
 from src.config import CONFIG
 
 
-async def connect():
-    url = f'ws://{CONFIG["SERVER"]["host"]}:{CONFIG["SERVER"]["port"]}'
-    headers = {
-        'Authorization': CONFIG['SERVER']['password'], 'User-Agent': 'swish-client v0.0.1a', 'Client-ID': 00000,
+URL = f'ws://{CONFIG["SERVER"]["host"]}:{CONFIG["SERVER"]["port"]}'
+HEADERS = {
+    'Authorization': CONFIG['SERVER']['password'],
+    'User-Agent':    'swish-client v0.0.1a',
+    'Client-ID':     "00000",
+}
+PAYLOAD = {
+    'op': 'play',
+    'd':  {
+        'name': 'test'
     }
+}
+
+
+async def connect():
 
     session = aiohttp.ClientSession()
-    websocket = await session.ws_connect(url=url, headers=headers, autoclose=False)
+    websocket = await session.ws_connect(url=URL, headers=HEADERS, autoclose=False)
     print('WEBSOCKET: Connected')
 
-    await websocket.send_json(
-        {
-            "op": "play",
-            "d":  {
-                "name": "test"
-            }
-        }
-    )
+    await websocket.send_json(PAYLOAD)
+    print('WEBSOCKET: Sent example payload')
 
-    await websocket.close()
-    await session.close()
-    print('WEBSOCKET: Disconnected')
+    while True:
+
+        message = await websocket.receive()
+
+        if message.type is aiohttp.WSMsgType.CLOSED:
+            print('WEBSOCKET: Disconnected')
+            break
+
+        print(message)
+
+    if not session.closed:
+        await session.close()
+    if not websocket.close():
+        await websocket.close()
 
 
 try:

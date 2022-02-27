@@ -12,13 +12,14 @@ import aiohttp.web
 
 # local
 from .config import CONFIG
+from .player import Player
 
 
 logger = logging.getLogger('swish')
 
-Json = dict[str, Any]
+JSON = dict[str, Any]
 Websocket = aiohttp.web.WebSocketResponse
-OpHandler = Callable[[Websocket, Json], Awaitable[None]]
+OpHandler = Callable[[Websocket, JSON], Awaitable[None]]
 
 
 class Server(aiohttp.web.Application):
@@ -114,25 +115,50 @@ class Server(aiohttp.web.Application):
 
     # Websocket handlers
 
-    async def connect(self, ws: Websocket, data: Json) -> None:
-        print('Received "connect" op')
+    async def connect(self, ws: Websocket, data: JSON) -> None:
 
-    async def destroy(self, ws: Websocket, data: Json) -> None:
-        print('Received "destroy" op')
+        guild_id = data['guild_id']
 
-    async def play(self, ws: Websocket, data: Json) -> None:
-        print('Received "play" op')
+        player = Player(guild_id)
 
-    async def stop(self, ws: Websocket, data: Json) -> None:
+        await player.connect()
+        ws["players"][guild_id] = player
+
+    async def destroy(self, ws: Websocket, data: JSON) -> None:
+
+        guild_id = data['guild_id']
+
+        if not (player := ws['players'].get(guild_id)):  # type: Player
+            return
+
+        await player.destroy()
+        del ws['players'][guild_id]
+
+    async def play(self, ws: Websocket, data: JSON) -> None:
+
+        guild_id = data['guild_id']
+
+        player: Player | None = ws['players'][guild_id]
+        if not player:
+            return
+
+        player.play(
+            data['track_id'],
+            start_position=data.get('start_position', None),
+            end_position=data.get('end_position', None),
+            replace=data.get('replace', None)
+        )
+
+    async def stop(self, ws: Websocket, data: JSON) -> None:
         print('Received "stop" op')
 
-    async def set_position(self, ws: Websocket, data: Json) -> None:
+    async def set_position(self, ws: Websocket, data: JSON) -> None:
         print('Received "set_position" op')
 
-    async def set_pause_state(self, ws: Websocket, data: Json) -> None:
+    async def set_pause_state(self, ws: Websocket, data: JSON) -> None:
         print('Received "set_pause_state" op')
 
-    async def set_filter(self, ws: Websocket, data: Json) -> None:
+    async def set_filter(self, ws: Websocket, data: JSON) -> None:
         print('Received "set_filter" op')
 
     # Rest handlers
