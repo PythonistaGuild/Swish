@@ -2,6 +2,7 @@ from __future__ import annotations
 
 # stdlib
 import logging
+from typing import Any
 
 # packages
 import toml
@@ -11,12 +12,12 @@ logger = logging.getLogger('swish')
 
 
 try:
-    CONFIG = toml.load('swish.toml')
+    CONFIG: dict[str, Any] = toml.load('swish.toml')  # type: ignore
     logger.info('Successfully loaded swish.toml configuration.')
 except Exception as e:
     logger.error(f'Exception: {e} when reading swish.toml. Default config values will be used instead.')
 
-    CONFIG = {
+    CONFIG: dict[str, Any] = {
         'SERVER': {'host': 'localhost', 'port': 3555}
     }
 
