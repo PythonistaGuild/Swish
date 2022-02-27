@@ -13,6 +13,7 @@ import aiohttp.web
 # local
 from .config import CONFIG
 from .player import Player
+from .rotator import IPRotator
 
 
 logger = logging.getLogger('swish')
@@ -26,6 +27,8 @@ class Server(aiohttp.web.Application):
 
     def __init__(self):
         super().__init__()
+
+        self.rotator = IPRotator()
 
         self.WS_OP_HANDLERS: dict[str, OpHandler] = {
             'connect':         self.connect,
