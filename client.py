@@ -45,7 +45,7 @@ async def connect():
 
     if not session.closed:
         await session.close()
-    if not websocket.close():
+    if not websocket.closed:
         await websocket.close()
 
 

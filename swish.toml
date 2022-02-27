@@ -13,6 +13,6 @@ blocks = ['2001:470:5521::/48', '1001:470:5521::/48']
     max_bytes = 5242880  # 5mb
 
     [LOGGING.LEVEL]
-        swish = "INFO"
-        discord = "INFO"
-        aiohttp = "INFO"
+        swish = "DEBUG"
+        discord = "NOTSET"
+        aiohttp = "NOTSET"
