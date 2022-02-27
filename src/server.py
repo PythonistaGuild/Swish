@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 # stdlib
-import asyncio
 import logging
 import uuid
 
@@ -29,13 +28,14 @@ class Server(web.Application):
             ]
         )
 
-        self.websockets = {}
+        self.connections: dict[str, web.WebSocketResponse] = {}
 
-    async def websocket_handler(self, request: web.Request):
+    async def websocket_handler(self, request: web.Request) -> web.WebSocketResponse:
+
         logger.info(f'Received request to upgrade websocket from:: {request.remote}.')
 
-        ws = web.WebSocketResponse()
-        await ws.prepare(request)
+        websocket = web.WebSocketResponse()
+        await websocket.prepare(request)
 
         password = CONFIG['SERVER']['password']
         auth = request.headers.get('Authorization')
@@ -44,21 +44,32 @@ class Server(web.Application):
             logger.error(f'Authorization failed for request from:: {request.remote} with Authorization: {auth}')
             raise web.HTTPUnauthorized
 
-        if not request.headers.get('Client-ID'):
-            logger.error('Unable to compleeete websocket handshake as your Client-ID header is missing.')
+        client_id = request.headers.get('Client-ID')
+        if not client_id:
+            logger.error('Unable to complete websocket handshake as your Client-ID header is missing.')
             raise web.HTTPBadRequest
 
         if not request.headers.get('User-Agent'):
-            logger.warn('No User-Agent header provided. Please provide a User-Agent in future connections.')
+            logger.warning('No User-Agent header provided. Please provide a User-Agent in future connections.')
 
-        UUID = uuid.uuid4()
-        self.websockets[UUID] = {'websocket': ws, 'headers': request.headers}
+        connection_id = str(uuid.uuid4())
+
+        websocket['Client-ID'] = client_id
+        websocket['Connection-ID'] = connection_id
+        self.connections[connection_id] = websocket
 
         logger.info(f'Successful websocket handshake completed from:: {request.remote}.')
 
-        async for message in ws:
-            message: aiohttp.WSMessage
-            print(message.data)
+        async for message in websocket:  # type: aiohttp.WSMessage
+            try:
+                data = message.json()
+            except Exception:
+                logger.error(f'Unable to parse JSON from:: {request.remote}.')
+                continue
+
+            print(data)
+
+        return websocket
 
     async def search_tracks(self):
         pass
