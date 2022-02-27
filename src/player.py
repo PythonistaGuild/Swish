@@ -56,7 +56,8 @@ class Player:
         self.current_track_id = track_id
 
         decoded = self.server.searcher.decode_track(track_id)
-        track = await self.server.searcher.search_youtube(decoded['id'], raw=True)[0]
+        track = await self.server.searcher.search_youtube(decoded['id'], raw=True)
+        track = track[0]
 
         logger.info(f'Request to play track: {track_id} - {decoded["title"]}')
         self.vc.play(track['url'])
