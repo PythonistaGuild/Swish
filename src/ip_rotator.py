@@ -12,19 +12,20 @@ from .config import CONFIG
 logger: logging.Logger = logging.getLogger('swish.rotator')
 
 Network = ipaddress.IPv4Network | ipaddress.IPv6Network
+IP = ipaddress.IPv4Address | ipaddress.IPv6Address
 
 
 class IpRotator:
 
     def __init__(self) -> None:
 
-        self._current: str | None = None
+        self._current: IP | None = None
 
         self._blocks = CONFIG['IP']['blocks']
         self._networks: list[Network] = [ipaddress.ip_network(ip) for ip in self._blocks]
         self._total: int = sum(network.num_addresses for network in self._networks)
 
-        self._banned: list[str] = []
+        self._banned: list[IP] = []
 
         if not self._networks:
             logger.warning('No IP blocks configured. Increased risk of rate-limiting.')
@@ -34,16 +35,16 @@ class IpRotator:
 
     def rotate(self) -> str:
 
-        self._banned.append(self._current)
-        logger.debug(f'Banned IP: {self._current}')
+        if self._current:
+            self._banned.append(self._current)
+            logger.debug(f'Banned IP: {self._current}')
 
-        network: Network = random.choice(self._networks)
-        for ip in network:
+        for ip in random.choice(self._networks):
 
-            if ip in self._banned:
+            if ip in self._banned or ip == self._current:
                 continue
 
+            self._current = ip
             logger.info(f'Rotated to new IP: {ip}')
 
-            self._current = ip
-            return str(ip)
+        return str(self._current)
