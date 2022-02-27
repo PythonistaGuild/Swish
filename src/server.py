@@ -20,7 +20,7 @@ from .rotator import IPRotator
 from .search import Search
 
 
-logger = logging.getLogger('swish')
+logger: logging.Logger = logging.getLogger('swish.server')
 
 JSON = dict[str, Any]
 Websocket = aiohttp.web.WebSocketResponse

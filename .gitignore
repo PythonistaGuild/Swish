@@ -9,5 +9,6 @@
 # Editor-based HTTP Client requests
 /httpRequests/
 
+/logs
 /.idea
 *.pyc

@@ -3,11 +3,12 @@ from __future__ import annotations
 # stdlib
 import logging
 
+# packages
 import discord
 from discord.ext.native_voice import VoiceClient
 
 
-logger: logging.Logger = logging.getLogger('player')
+logger: logging.Logger = logging.getLogger('swish.player')
 
 
 class Player:

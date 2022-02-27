@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+# stdlib
 import asyncio
 import base64
 import contextlib
@@ -5,6 +8,7 @@ import functools
 import json
 import os
 
+# packages
 import yt_dlp
 
 

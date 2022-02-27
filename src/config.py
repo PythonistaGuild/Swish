@@ -8,7 +8,7 @@ from typing import Any
 import toml
 
 
-logger = logging.getLogger('swish')
+logger: logging.Logger = logging.getLogger('swish.config')
 
 
 try:

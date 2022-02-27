@@ -2,15 +2,13 @@ from __future__ import annotations
 
 # stdlib
 import asyncio
-import logging
 
 # local
-import src
+from src import Server, logging
 
 
-logger = logging.getLogger('swish')
-logger.setLevel(logging.DEBUG)
-logger.addHandler(src.STDOUT_LOGGER())
+logging.setup()
+
 
 BANNER = """
 ######################################################
@@ -27,8 +25,10 @@ BANNER = """
 """
 print(BANNER)
 
+
 loop = asyncio.new_event_loop()
-app = src.Server()
+app = Server()
+
 
 try:
     loop.create_task(app._run_app())

@@ -1,11 +1,15 @@
+from __future__ import annotations
+
+# stdlib
 import ipaddress
 import logging
 import random
 
+# local
 from .config import CONFIG
 
 
-logger = logging.getLogger('swish')
+logger: logging.Logger = logging.getLogger('swish.rotator')
 
 
 class IPRotator:
