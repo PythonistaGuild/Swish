@@ -15,8 +15,8 @@ import discord
 
 # local
 from .config import CONFIG
+from .ip_rotator import IpRotator
 from .player import Player
-from .rotator import IPRotator
 from .search import Search
 
 
@@ -32,7 +32,7 @@ class Server(aiohttp.web.Application):
     def __init__(self):
         super().__init__()
 
-        self.rotator = IPRotator()
+        self.rotator = IpRotator()
         self.searcher = Search()
 
         self.WS_OP_HANDLERS: dict[str, OpHandler] = {
@@ -57,22 +57,22 @@ class Server(aiohttp.web.Application):
 
     async def _run_app(self) -> None:
 
-        host_ = CONFIG['SERVER']['host']
-        port_ = CONFIG['SERVER']['port']
+        logger.debug('Starting Swish server...')
 
-        logger.info(f'Starting Swish server on {host_}:{port_}...')
+        host = CONFIG['SERVER']['host']
+        port = CONFIG['SERVER']['port']
 
         runner = aiohttp.web.AppRunner(app=self)
         await runner.setup()
 
         site = aiohttp.web.TCPSite(
             runner=runner,
-            host=host_,
-            port=port_
+            host=host,
+            port=port
         )
-
         await site.start()
-        logger.info('Successfully started swish server...')
+
+        logger.info(f'Swish server started on {host}:{port}')
 
     async def websocket_handler(self, request: aiohttp.web.Request) -> Websocket:
 
