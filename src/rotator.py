@@ -26,7 +26,7 @@ class IPRotator:
             logger.info(f'Using rotating IP addresses with {self.total} total addresses...')
             self.get_ip()
         else:
-            logger.warning('No IP rotating has been set up. This may result in being rate-limited.')
+            logger.warning('No IP rotating has been set up. This may result in increased rate-limiting.')
 
     def get_ip(self) -> str:
         logger.debug('Generating new IP address from random network.')
