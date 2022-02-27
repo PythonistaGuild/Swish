@@ -8,7 +8,7 @@ from typing import Any
 
 # packages
 import aiohttp
-from aiohttp import web
+import aiohttp.web
 
 # local
 from .config import CONFIG
@@ -17,10 +17,11 @@ from .config import CONFIG
 logger = logging.getLogger('swish')
 
 Json = dict[str, Any]
-OpHandler = Callable[[web.WebSocketResponse, Json], Awaitable[None]]
+Websocket = aiohttp.web.WebSocketResponse
+OpHandler = Callable[[Websocket, Json], Awaitable[None]]
 
 
-class Server(web.Application):
+class Server(aiohttp.web.Application):
 
     def __init__(self):
         super().__init__()
@@ -37,25 +38,25 @@ class Server(web.Application):
 
         self.add_routes(
             [
-                web.get('/', self.websocket_handler),
-                web.get('/search', self.search_tracks),
-                web.get('/debug', self.debug_stats)
+                aiohttp.web.get('/', self.websocket_handler),
+                aiohttp.web.get('/search', self.search_tracks),
+                aiohttp.web.get('/debug', self.debug_stats)
             ]
         )
 
-        self.connections: dict[str, web.WebSocketResponse] = {}
+        self.connections: dict[str, Websocket] = {}
 
-    async def _run_app(self):
+    async def _run_app(self) -> None:
 
         host_ = CONFIG['SERVER']['host']
         port_ = CONFIG['SERVER']['port']
 
         logger.info(f'Starting Swish server on {host_}:{port_}...')
 
-        runner = web.AppRunner(app=self)
+        runner = aiohttp.web.AppRunner(app=self)
         await runner.setup()
 
-        site = web.TCPSite(
+        site = aiohttp.web.TCPSite(
             runner=runner,
             host=host_,
             port=port_
@@ -64,11 +65,11 @@ class Server(web.Application):
         await site.start()
         logger.info('Successfully started swish server...')
 
-    async def websocket_handler(self, request: web.Request) -> web.WebSocketResponse:
+    async def websocket_handler(self, request: aiohttp.web.Request) -> Websocket:
 
         logger.info(f'Received request to upgrade websocket from:: {request.remote}.')
 
-        websocket = web.WebSocketResponse()
+        websocket = aiohttp.web.WebSocketResponse()
         await websocket.prepare(request)
 
         password = CONFIG['SERVER']['password']
@@ -76,12 +77,12 @@ class Server(web.Application):
 
         if password != auth:
             logger.error(f'Authorization failed for request from:: {request.remote} with Authorization: {auth}')
-            raise web.HTTPUnauthorized
+            raise aiohttp.web.HTTPUnauthorized
 
         client_id = request.headers.get('Client-ID')
         if not client_id:
             logger.error('Unable to complete websocket handshake as your Client-ID header is missing.')
-            raise web.HTTPBadRequest
+            raise aiohttp.web.HTTPBadRequest
 
         if not request.headers.get('User-Agent'):
             logger.warning('No User-Agent header provided. Please provide a User-Agent in future connections.')
@@ -103,8 +104,9 @@ class Server(web.Application):
                 continue
 
             op = data.get('op', None)
-            if not (handler := self.WS_OP_HANDLERS.get(op, None)):
+            if not (handler := self.WS_OP_HANDLERS.get(op)):
                 logger.error(f'No handler registered for op:: {op}.')
+                continue
 
             await handler(websocket, data['d'])
 
@@ -112,31 +114,31 @@ class Server(web.Application):
 
     # Websocket handlers
 
-    async def connect(self, ws: web.WebSocketResponse, data: Json) -> None:
+    async def connect(self, ws: Websocket, data: Json) -> None:
         print('Received "connect" op')
 
-    async def play(self, ws: web.WebSocketResponse, data: Json) -> None:
-        print('Received "play" op')
-
-    async def stop(self, ws: web.WebSocketResponse, data: Json) -> None:
-        print('Received "stop" op')
-
-    async def destroy(self, ws: web.WebSocketResponse, data: Json) -> None:
+    async def destroy(self, ws: Websocket, data: Json) -> None:
         print('Received "destroy" op')
 
-    async def set_position(self, ws: web.WebSocketResponse, data: Json) -> None:
+    async def play(self, ws: Websocket, data: Json) -> None:
+        print('Received "play" op')
+
+    async def stop(self, ws: Websocket, data: Json) -> None:
+        print('Received "stop" op')
+
+    async def set_position(self, ws: Websocket, data: Json) -> None:
         print('Received "set_position" op')
 
-    async def set_pause_state(self, ws: web.WebSocketResponse, data: Json) -> None:
+    async def set_pause_state(self, ws: Websocket, data: Json) -> None:
         print('Received "set_pause_state" op')
 
-    async def set_filter(self, ws: web.WebSocketResponse, data: Json) -> None:
+    async def set_filter(self, ws: Websocket, data: Json) -> None:
         print('Received "set_filter" op')
 
     # Rest handlers
 
-    async def search_tracks(self):
-        pass
+    async def search_tracks(self, request: aiohttp.web.Request) -> aiohttp.web.Response:
+        raise NotImplementedError
 
-    async def debug_stats(self):
-        pass
+    async def debug_stats(self, request: aiohttp.web.Request) -> aiohttp.web.Response:
+        raise NotImplementedError

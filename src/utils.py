@@ -5,7 +5,7 @@ import datetime
 import logging
 
 # packages
-from colorama import Back, Fore, Style
+from colorama import Fore
 from colorama import init as c_init
 
 
