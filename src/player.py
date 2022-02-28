@@ -123,6 +123,7 @@ class Player:
         while True:
 
             try:
+                assert self._connection is not None
                 await self._connection.run(loop)
 
             except _native_voice.ConnectionClosed:
@@ -160,10 +161,10 @@ class Player:
     # utility
 
     def is_playing(self) -> bool:
-        return self._connection.is_playing() if self._connection else False
+        return self._connection.is_playing() if self._connection else False  # type: ignore
 
-    def is_paused(self) -> bool:  # TODO: implement rust stuff for this
-        return self._connection.is_paused() if self._connection else False
+    def is_paused(self) -> bool:
+        return self._connection.is_paused() if self._connection else False  # type: ignore
 
     def _debug_info(self) -> dict[str, Any]:
-        return self._connection.get_state() if self._connection else {}
+        return self._connection.get_state() if self._connection else {}  # type: ignore

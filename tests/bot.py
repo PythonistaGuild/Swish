@@ -17,7 +17,7 @@ CONFIG: dict[str, Any] = toml.load('../swish.toml')  # type: ignore
 
 class CD(commands.Bot):
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             command_prefix=commands.when_mentioned_or('cb '),
             intents=discord.Intents.all(),
@@ -30,7 +30,7 @@ class CD(commands.Bot):
         self.websocket: aiohttp.ClientWebSocketResponse | None = None
         self.task: asyncio.Task[None] | None = None
 
-    async def on_ready(self):
+    async def on_ready(self) -> None:
 
         if not self.first_ready:
             return
@@ -129,7 +129,7 @@ class Player(discord.VoiceProtocol):
 
 class Music(commands.Cog):
 
-    def __init__(self, bot: CD):
+    def __init__(self, bot: CD) -> None:
         self.bot: CD = bot
 
     @commands.command()

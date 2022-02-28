@@ -7,9 +7,15 @@ import contextlib
 import functools
 import json
 import os
+from typing import TYPE_CHECKING, Any
 
 # packages
 import yt_dlp
+
+
+if TYPE_CHECKING:
+    # local
+    from .app import App
 
 
 class Search:
@@ -27,11 +33,11 @@ class Search:
         'source_address': '0.0.0.0'  # ipv6 addresses cause issues sometimes
     }
 
-    def decode_track(self, track: base64) -> dict:
+    def decode_track(self, track: base64) -> dict[str, Any]:
         bytes_ = base64.b64decode(track)
         return json.loads(bytes_.decode())
 
-    def encode_track(self, info: dict, *, internal: bool = False) -> base64:
+    def encode_track(self, info: dict[str, Any], *, internal: bool = False) -> base64:
         data = {'id': info['id'], 'title': info['title']}
         if internal:
             data['url'] = info['url']
@@ -41,8 +47,8 @@ class Search:
 
         return base64.b64encode(bytes_).decode()
 
-    async def search_youtube(self, query: str, server=None, *, raw: bool = False, internal: bool = False):
-        self.opts['source_address'] = server.rotator.rotate() if server else '0.0.0.0'
+    async def search_youtube(self, query: str, app: App | None = None, *, raw: bool = False, internal: bool = False):
+        self.opts['source_address'] = app.rotator.rotate() if app else '0.0.0.0'
         YTDL = yt_dlp.YoutubeDL(self.opts)
 
         loop = asyncio.get_running_loop()

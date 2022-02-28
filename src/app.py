@@ -123,6 +123,7 @@ class App(aiohttp.web.Application):
 
             await player.handle_payload(payload)
 
+        logger.info(f'Websocket connection from <{client_name}> closed.')
         return websocket
 
     # Rest handlers
@@ -130,7 +131,7 @@ class App(aiohttp.web.Application):
     async def search_tracks(self, request: aiohttp.web.Request) -> aiohttp.web.Response:
         search = request.query.get('query')
 
-        data = await self.search.search_youtube(search, server=self)
+        data = await self.search.search_youtube(search, app=self)
         return aiohttp.web.json_response(data=data, status=200)
 
     async def debug_stats(self, request: aiohttp.web.Request) -> aiohttp.web.Response:
