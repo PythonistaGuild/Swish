@@ -17,6 +17,8 @@ PyInstaller.__main__.run([
     'swish',
     '--distpath',
     'dist',
+    '--exclude-module',
+    '_bootlocale',
     '--onefile',
     '--add-binary',
     f'./bin/ffmpeg.exe{delim}.'
@@ -29,5 +31,7 @@ PyInstaller.__main__.run([
     'swish',
     '--distpath',
     'dist_no_bin',
+    '--exclude-module',
+    '_bootlocale',
     '--onefile',
 ])

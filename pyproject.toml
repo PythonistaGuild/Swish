@@ -21,6 +21,7 @@ colorama                    = "^0.4.0"
 [tool.poetry.dev-dependencies]
 isort = "*"
 jishaku = "*"
+pyinstaller = "*"
 
 
 [tool.isort]
