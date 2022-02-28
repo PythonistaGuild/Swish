@@ -12,7 +12,7 @@ from discord.ext.native_voice import _native_voice
 
 if TYPE_CHECKING:
     # local
-    from .server import Server
+    from .app import App
 
 
 logger: logging.Logger = logging.getLogger('swish.player')
@@ -20,10 +20,10 @@ logger: logging.Logger = logging.getLogger('swish.player')
 
 class Player:
 
-    def __init__(self, guild_id: str, user_id: str, server: Server) -> None:
+    def __init__(self, guild_id: str, user_id: str, app: App) -> None:
 
         self._guild_id: str = guild_id
-        self._server: Server = server
+        self._server: App = app
 
         self._connector: _native_voice.VoiceConnector = _native_voice.VoiceConnector()
         self._connector.user_id = int(user_id)

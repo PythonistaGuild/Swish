@@ -15,10 +15,10 @@ from .player import Player
 from .search import Search
 
 
-logger: logging.Logger = logging.getLogger('swish.server')
+logger: logging.Logger = logging.getLogger('swish.app')
 
 
-class Server(aiohttp.web.Application):
+class App(aiohttp.web.Application):
 
     def __init__(self):
         super().__init__()

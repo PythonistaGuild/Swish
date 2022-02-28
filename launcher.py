@@ -4,10 +4,10 @@ from __future__ import annotations
 import asyncio
 
 # local
-from src import Server, logging
+from src import App, setup_logging
 
 
-logging.setup()
+setup_logging()
 
 
 BANNER = """
@@ -27,7 +27,7 @@ print(BANNER)
 
 
 loop = asyncio.new_event_loop()
-app = Server()
+app = App()
 
 
 try:
