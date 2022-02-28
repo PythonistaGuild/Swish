@@ -8,21 +8,26 @@ from typing import Any
 import aiohttp
 import discord
 import discord.types.voice
+import toml
 from discord.ext import commands
 
-# local
-from src.config import CONFIG
+
+CONFIG: dict[str, Any] = toml.load('../swish.toml')  # type: ignore
 
 
-class Bot(commands.Bot):
+class CD(commands.Bot):
 
     def __init__(self):
-        super().__init__(command_prefix='>?')
+        super().__init__(
+            command_prefix=commands.when_mentioned_or('cb '),
+            intents=discord.Intents.all(),
+            case_insensitive=True,
+        )
 
         self.first_ready: bool = True
 
         self.session: aiohttp.ClientSession | None = None
-        self._ws: aiohttp.ClientWebSocketResponse | None = None
+        self.websocket: aiohttp.ClientWebSocketResponse | None = None
         self.task: asyncio.Task[None] | None = None
 
     async def on_ready(self):
@@ -33,8 +38,7 @@ class Bot(commands.Bot):
         self.first_ready = False
 
         self.session = aiohttp.ClientSession()
-
-        self._ws = await self.session.ws_connect(
+        self.websocket = await self.session.ws_connect(
             url=f'ws://{CONFIG["SERVER"]["host"]}:{CONFIG["SERVER"]["port"]}',
             headers={
                 'Authorization': CONFIG['SERVER']['password'],
@@ -42,7 +46,6 @@ class Bot(commands.Bot):
                 'User-Id':       str(self.user.id),
             },
         )
-
         self.task = asyncio.create_task(self._listen())
 
         print('Bot is ready!')
@@ -50,7 +53,7 @@ class Bot(commands.Bot):
     async def _listen(self) -> None:
 
         while True:
-            message = await self._ws.receive()
+            message = await self.websocket.receive()
             payload = message.json()
 
             asyncio.create_task(self._receive_payload(payload["op"], data=payload["d"]))
@@ -58,25 +61,26 @@ class Bot(commands.Bot):
     async def _receive_payload(self, op: str, /, *, data: dict[str, Any]) -> None:
         raise NotImplementedError
 
-    async def _send_payload(self, op: str, /, *, data: dict[str, Any]) -> None:
+    async def _send_payload(self, op: str, data: dict[str, Any]) -> None:
 
-        payload = {
-            "op": op,
-            "d": data,
-        }
-        await self._ws.send_json(payload)
+        await self.websocket.send_json(
+            data={
+                "op": op,
+                "d":  data,
+            }
+        )
 
 
 class Player(discord.VoiceProtocol):
 
-    def __init__(self, client: Bot, channel: discord.VoiceChannel) -> None:
+    def __init__(self, client: CD, channel: discord.VoiceChannel) -> None:
         super().__init__(client, channel)
+
+        self.bot: CD = client
+        self.voice_channel: discord.VoiceChannel = channel
 
         self._voice_server_update_data: discord.types.voice.VoiceServerUpdate | None = None
         self._session_id: str | None = None
-
-        self.bot = client
-        self.voice_channel = channel
 
     async def on_voice_server_update(
         self,
@@ -112,7 +116,6 @@ class Player(discord.VoiceProtocol):
         self_mute: bool = False,
         self_deaf: bool = True,
     ) -> None:
-
         await self.voice_channel.guild.change_voice_state(channel=self.voice_channel, self_mute=self_mute, self_deaf=self_deaf)
 
     async def disconnect(
@@ -120,15 +123,14 @@ class Player(discord.VoiceProtocol):
         *,
         force: bool = False
     ) -> None:
-
         await self.voice_channel.guild.change_voice_state(channel=None)
         self.cleanup()
 
 
 class Music(commands.Cog):
 
-    def __init__(self, bot: Bot):
-        self.bot = bot
+    def __init__(self, bot: CD):
+        self.bot: CD = bot
 
     @commands.command()
     async def play(self, ctx: commands.Context, *, query: str) -> None:
@@ -140,6 +142,9 @@ class Music(commands.Cog):
             await self.bot._send_payload("play", data={"guild_id": str(ctx.guild.id), "track_id": (await response.json())[0]})
 
 
-a = Bot()
-a.add_cog(Music(a))
-a.run('no token for u >:)')
+cd = CD()
+
+cd.load_extension('jishaku')
+cd.add_cog(Music(cd))
+
+cd.run('')
