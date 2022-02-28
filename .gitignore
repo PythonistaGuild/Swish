@@ -12,3 +12,10 @@
 /logs
 /.idea
 *.pyc
+
+/dist
+/dist_no_bin
+/build
+swish.spec
+/pyu-data
+keypack.pyu
