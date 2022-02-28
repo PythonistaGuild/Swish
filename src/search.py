@@ -20,15 +20,15 @@ if TYPE_CHECKING:
 
 class Search:
 
-    opts = {
-        'format': 'bestaudio/best',
-        'restrictfilenames': False,
-        'noplaylist': False,
-        'nocheckcertificate': True,
-        'ignoreerrors': True,
-        'logtostderr': False,
+    ytdl_options: dict[str, Any] = {
         'quiet': True,
         'no_warnings': True,
+        'format': 'bestaudio/best',
+        'restrictfilenames': False,
+        'ignoreerrors': True,
+        'logtostderr': False,
+        'noplaylist': False,
+        'nocheckcertificate': True,
         'default_search': 'auto',
         'source_address': '0.0.0.0'  # ipv6 addresses cause issues sometimes
     }
@@ -48,8 +48,8 @@ class Search:
         return base64.b64encode(bytes_).decode()
 
     async def search_youtube(self, query: str, app: App | None = None, *, raw: bool = False, internal: bool = False):
-        self.opts['source_address'] = app.rotator.rotate() if app else '0.0.0.0'
-        YTDL = yt_dlp.YoutubeDL(self.opts)
+        self.ytdl_options['source_address'] = app.rotator.rotate() if app else '0.0.0.0'
+        YTDL = yt_dlp.YoutubeDL(self.ytdl_options)
 
         loop = asyncio.get_running_loop()
         partial = functools.partial(YTDL.extract_info, query, download=False)
