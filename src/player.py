@@ -1,20 +1,16 @@
 from __future__ import annotations
 
-# stdlib
 import asyncio
 import logging
 from collections.abc import Awaitable, Callable
 from typing import TYPE_CHECKING, Any
 
-# packages
 import aiohttp
 import aiohttp.web
 from discord.backoff import ExponentialBackoff
 from discord.ext.native_voice import _native_voice
 
-
 if TYPE_CHECKING:
-    # local
     from .app import App
 
 

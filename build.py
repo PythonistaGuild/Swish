@@ -1,16 +1,14 @@
 from __future__ import annotations
 
-# stdlib
 import platform
 
-# packages
 import PyInstaller.__main__
 
 
 delim = ';' if platform.system() == 'Windows' else ':'
 
 
-# Install with ffmpeg binaries...
+# Install with ffmpeg binary
 PyInstaller.__main__.run([
     'launcher.py',
     '--name',
@@ -24,7 +22,7 @@ PyInstaller.__main__.run([
     f'./bin/ffmpeg.exe{delim}.'
 ])
 
-# Install without ffmpeg binaries...
+# Install without ffmpeg binary
 PyInstaller.__main__.run([
     'launcher.py',
     '--name',

@@ -19,23 +19,8 @@ colorama                    = "^0.4.0"
 
 
 [tool.poetry.dev-dependencies]
-isort = "*"
 jishaku = "*"
 pyinstaller = "*"
-
-
-[tool.isort]
-line_length                 = 120
-multi_line_output           = 3
-lines_after_imports         = 2
-combine_star                = true
-include_trailing_comma      = true
-star_first                  = true
-known_local_folder          = ["src"]
-import_heading_stdlib       = "stdlib"
-import_heading_thirdparty   = "packages"
-import_heading_firstparty   = "local"
-import_heading_localfolder  = "local"
 
 
 [tool.pyright]

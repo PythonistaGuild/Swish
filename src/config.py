@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-# stdlib
 import logging
 from typing import Any
 
-# packages
 import toml
 
 

@@ -1,12 +1,9 @@
 from __future__ import annotations
 
-# stdlib
 import asyncio
 
-# packages
 import aiohttp
 
-# local
 from src.config import CONFIG
 
 

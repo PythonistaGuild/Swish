@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-# stdlib
 import asyncio
 from typing import Any
 
-# packages
 import aiohttp
 import discord
 import discord.types.voice

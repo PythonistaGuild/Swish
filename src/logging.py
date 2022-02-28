@@ -1,15 +1,12 @@
 from __future__ import annotations
 
-# stdlib
 import logging
 import logging.handlers
 import os
 
-# packages
 import colorama
 
-# local
-from src.config import CONFIG
+from .config import CONFIG
 
 
 def setup_logging() -> None:
