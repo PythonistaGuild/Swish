@@ -1,36 +1,35 @@
 from __future__ import annotations
 
-# stdlib
 import asyncio
 import base64
 import contextlib
 import functools
 import json
+import logging
 import os
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
-# packages
 import yt_dlp
 
+from .ip_rotator import IpRotator
 
-if TYPE_CHECKING:
-    # local
-    from .app import App
+
+logger: logging.Logger = logging.getLogger('swish.search')
 
 
 class Search:
 
-    ytdl_options: dict[str, Any] = {
-        'quiet': True,
-        'no_warnings': True,
-        'format': 'bestaudio/best',
-        'restrictfilenames': False,
-        'ignoreerrors': True,
-        'logtostderr': False,
-        'noplaylist': False,
+    YT_DL_OPTIONS: dict[str, Any] = {
+        'quiet':              True,
+        'no_warnings':        True,
+        'format':             'bestaudio/best',
+        'restrictfilenames':  False,
+        'ignoreerrors':       True,
+        'logtostderr':        False,
+        'noplaylist':         False,
         'nocheckcertificate': True,
-        'default_search': 'auto',
-        'source_address': '0.0.0.0'  # ipv6 addresses cause issues sometimes
+        'default_search':     'auto',
+        'source_address':     '0.0.0.0'
     }
 
     def decode_track(self, track: base64) -> dict[str, Any]:
@@ -47,9 +46,16 @@ class Search:
 
         return base64.b64encode(bytes_).decode()
 
-    async def search_youtube(self, query: str, app: App | None = None, *, raw: bool = False, internal: bool = False):
-        self.ytdl_options['source_address'] = app.rotator.rotate() if app else '0.0.0.0'
-        YTDL = yt_dlp.YoutubeDL(self.ytdl_options)
+    async def search_youtube(
+        self,
+        query: str,
+        *,
+        raw: bool = False,
+        internal: bool = False
+    ) -> Any:
+
+        self.YT_DL_OPTIONS['source_address'] = IpRotator.rotate()
+        YTDL = yt_dlp.YoutubeDL(self.YT_DL_OPTIONS)
 
         loop = asyncio.get_running_loop()
         partial = functools.partial(YTDL.extract_info, query, download=False)

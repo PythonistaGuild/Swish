@@ -1,16 +1,15 @@
 from __future__ import annotations
 
-# stdlib
+
 import asyncio
-
-# local
-from src import App, setup_logging
+loop = asyncio.new_event_loop()
 
 
+from src.logging import setup_logging
 setup_logging()
 
 
-BANNER = f"""
+BANNER = """
 ######################################################
 ##   (`-').->     .->     _      (`-').-> (`-').->  ##
 ##   ( OO)_   (`(`-')/`) (_)     ( OO)_   (OO )__   ##
@@ -26,7 +25,7 @@ BANNER = f"""
 print(BANNER)
 
 
-loop = asyncio.new_event_loop()
+from src.app import App
 app = App()
 
 

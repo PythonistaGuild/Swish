@@ -11,44 +11,43 @@ from .config import CONFIG
 
 logger: logging.Logger = logging.getLogger('swish.rotator')
 
+
 Network = ipaddress.IPv4Network | ipaddress.IPv6Network
 IP = ipaddress.IPv4Address | ipaddress.IPv6Address
 
 
 class IpRotator:
 
-    def __init__(self) -> None:
+    _blocks = CONFIG['IP']['blocks']
+    _networks: list[Network] = [ipaddress.ip_network(ip) for ip in _blocks]
 
-        self._current: IP | None = None
+    if _networks:
+        _total: int = sum(network.num_addresses for network in _networks)
+        logger.info(f'IP rotation enabled using {_total} total addresses.')
+    else:
+        _total: int = 0
+        logger.warning('No IP blocks configured. Increased risk of rate-limiting.')
 
-        self._blocks = CONFIG['IP']['blocks']
-        self._networks: list[Network] = [ipaddress.ip_network(ip) for ip in self._blocks]
-        self._total: int = sum(network.num_addresses for network in self._networks)
+    _banned: list[IP] = []
+    _current: IP | None = None
 
-        self._banned: list[IP] = []
+    @classmethod
+    def rotate(cls) -> str:
 
-        if not self._networks:
-            logger.warning('No IP blocks configured. Increased risk of rate-limiting.')
-        else:
-            logger.info(f'IP rotation enabled using {self._total} total addresses.')
-            self.rotate()
-
-    def rotate(self) -> str:
-
-        if not self._networks:
+        if not cls._networks:
             return '0.0.0.0'
 
-        if self._current:
-            self._banned.append(self._current)
-            logger.debug(f'Banned IP: {self._current}')
+        if cls._current:
+            cls._banned.append(cls._current)
+            logger.debug(f'Banned IP: {cls._current}')
 
-        for ip in random.choice(self._networks):
+        for ip in random.choice(cls._networks):
 
-            if ip in self._banned or ip == self._current:
+            if ip == cls._current or ip in cls._banned:
                 continue
 
             logger.info(f'Rotated to new IP: {ip}')
-            self._current = ip
+            cls._current = ip
             break
 
-        return str(self._current)
+        return str(cls._current)

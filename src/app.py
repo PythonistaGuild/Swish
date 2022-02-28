@@ -1,13 +1,10 @@
 from __future__ import annotations
 
-# stdlib
 import logging
 
-# packages
 import aiohttp
 import aiohttp.web
 
-# local
 from .config import CONFIG
 from .ip_rotator import IpRotator
 from .player import Player
@@ -22,7 +19,7 @@ class App(aiohttp.web.Application):
     def __init__(self):
         super().__init__()
 
-        self.rotator: IpRotator = IpRotator()
+        self.rotator: type[IpRotator] = IpRotator
         self.search: Search = Search()
 
         self.add_routes(
@@ -131,7 +128,7 @@ class App(aiohttp.web.Application):
     async def search_tracks(self, request: aiohttp.web.Request) -> aiohttp.web.Response:
         search = request.query.get('query')
 
-        data = await self.search.search_youtube(search, app=self)
+        data = await self.search.search_youtube(search)
         return aiohttp.web.json_response(data=data, status=200)
 
     async def debug_stats(self, request: aiohttp.web.Request) -> aiohttp.web.Response:
