@@ -15,7 +15,7 @@ yt-dlp                      = "^2022.2.0"
 toml                        = "^0.10.0"
 colorama                    = "^0.4.0"
 "discord.py"                = { git = "git@github.com:Rapptz/discord.py",                branch = "master" }
-"discord-ext-native-voice"  = { git = "git@github.com:EvieePy/discord-ext-native-voice", branch = "master" }
+"discord-ext-native-voice"  = { git = "git@github.com:Axelancerr/discord-ext-native-voice", branch = "master" }
 
 
 [tool.poetry.dev-dependencies]
