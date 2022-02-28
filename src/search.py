@@ -44,7 +44,7 @@ class Search:
         return base64.b64encode(bytes_).decode()
 
     async def search_youtube(self, query: str, server=None, *, raw: bool = False, internal: bool = False):
-        self.opts['source_address'] = server.rotator.current if server else '0.0.0.0'
+        self.opts['source_address'] = server.rotator.rotate() if server else '0.0.0.0'
         YTDL = yt_dlp.YoutubeDL(self.opts)
 
         loop = asyncio.get_running_loop()
