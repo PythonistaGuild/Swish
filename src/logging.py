@@ -54,8 +54,8 @@ def setup() -> None:
         file_handler.setFormatter(
             logging.Formatter(
                 fmt='%(asctime)s '
-                    '[%(name) 10s] '
-                    '[%(filename) 10s] '
+                    '[%(name) 16s] '
+                    '[%(filename) 16s] '
                     '[%(levelname) 7s] '
                     '%(message)s',
                 datefmt='%I:%M:%S %p %d/%m/%Y'
@@ -68,8 +68,8 @@ def setup() -> None:
         stream_handler.setFormatter(
             logging.Formatter(
                 fmt=f'{colorama.Fore.CYAN}%(asctime)s{colorama.Style.RESET_ALL} '
-                    f'{colorama.Fore.YELLOW}[%(name) 30s]{colorama.Style.RESET_ALL} '
-                    f'{colorama.Fore.GREEN}[%(filename) 20s]{colorama.Style.RESET_ALL} '
+                    f'{colorama.Fore.YELLOW}[%(name) 16s]{colorama.Style.RESET_ALL} '
+                    f'{colorama.Fore.GREEN}[%(filename) 16s]{colorama.Style.RESET_ALL} '
                     f'{colorama.Back.LIGHTCYAN_EX}{colorama.Fore.BLACK}[%(levelname) 7s]{colorama.Style.RESET_ALL} '
                     f'%(message)s',
                 datefmt='%I:%M:%S %p %d/%m/%Y',
