@@ -35,6 +35,9 @@ class IpRotator:
 
     def rotate(self) -> str:
 
+        if not self._networks:
+            return '0.0.0.0'
+
         if self._current:
             self._banned.append(self._current)
             logger.debug(f'Banned IP: {self._current}')
