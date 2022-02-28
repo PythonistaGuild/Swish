@@ -14,7 +14,7 @@ URL = f'ws://{CONFIG["SERVER"]["host"]}:{CONFIG["SERVER"]["port"]}'
 HEADERS = {
     'Authorization': CONFIG['SERVER']['password'],
     'User-Agent':    'swish-client v0.0.1a',
-    'Client-Token':     "HUIDUIDaiuhd^bAbhjsa",
+    'Client-Token':  'HUIDUIDaiuhd^bAbhjsa',
 }
 PAYLOAD = {
     'op': 'play',

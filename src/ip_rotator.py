@@ -47,7 +47,8 @@ class IpRotator:
             if ip in self._banned or ip == self._current:
                 continue
 
-            self._current = ip
             logger.info(f'Rotated to new IP: {ip}')
+            self._current = ip
+            break
 
         return str(self._current)

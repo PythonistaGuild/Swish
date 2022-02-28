@@ -29,12 +29,10 @@ class Search:
 
     def decode_track(self, track: base64) -> dict:
         bytes_ = base64.b64decode(track)
-
-        dict_ = json.loads(bytes_.decode())
-        return dict_
+        return json.loads(bytes_.decode())
 
     def encode_track(self, info: dict, *, internal: bool = False) -> base64:
-        data = {"id": info["id"], "title": info["title"]}
+        data = {'id': info['id'], 'title': info['title']}
         if internal:
             data['url'] = info['url']
 

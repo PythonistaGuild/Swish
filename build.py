@@ -1,5 +1,9 @@
+from __future__ import annotations
+
+# stdlib
 import platform
 
+# packages
 import PyInstaller.__main__
 
 
