@@ -14,26 +14,15 @@ from src.config import CONFIG
 
 colorama.init(autoreset=True)
 
-
-RESET: str = '\033[0m'
-BOLD: str = '\033[1m'
-REVERSE: str = '\033[7m'
-GREEN: str = '\033[1;32m'
-YELLOW: str = '\033[1;33m'
-MAGENTA: str = '\033[1;35m'
-CYAN: str = '\033[1;36m'
-
-loggers: dict[str, logging.Logger] = {}
+loggers: dict[str, logging.Logger] = {
+    "swish":   logging.getLogger("swish"),
+    "aiohttp": logging.getLogger("aiohttp"),
+}
 
 
 def setup() -> None:
 
-    loggers['swish'] = logging.getLogger('swish')
-    loggers['discord'] = logging.getLogger('discord')
-    loggers['aiohttp'] = logging.getLogger('aiohttp')
-
     loggers['swish'].setLevel(CONFIG['LOGGING']['LEVEL']['swish'])
-    loggers['discord'].setLevel(CONFIG['LOGGING']['LEVEL']['discord'])
     loggers['aiohttp'].setLevel(CONFIG['LOGGING']['LEVEL']['aiohttp'])
 
     for name, logger in loggers.items():
