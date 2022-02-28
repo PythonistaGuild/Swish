@@ -56,7 +56,7 @@ class CD(commands.Bot):
             message = await self.websocket.receive()
             payload = message.json()
 
-            asyncio.create_task(self._receive_payload(payload["op"], data=payload["d"]))
+            asyncio.create_task(self._receive_payload(payload['op'], data=payload['d']))
 
     async def _receive_payload(self, op: str, /, *, data: dict[str, Any]) -> None:
         raise NotImplementedError
@@ -65,8 +65,8 @@ class CD(commands.Bot):
 
         await self.websocket.send_json(
             data={
-                "op": op,
-                "d":  data,
+                'op': op,
+                'd':  data,
             }
         )
 
@@ -95,7 +95,7 @@ class Player(discord.VoiceProtocol):
         data: discord.types.voice.GuildVoiceState
     ) -> None:
 
-        self._session_id = data.get("session_id")
+        self._session_id = data.get('session_id')
         await self._dispatch_voice_update()
 
     async def _dispatch_voice_update(self) -> None:
@@ -104,8 +104,8 @@ class Player(discord.VoiceProtocol):
             return
 
         await self.bot._send_payload(
-            "voice_update",
-            data={"session_id": self._session_id, **self._voice_server_update_data},
+            'voice_update',
+            data={'session_id': self._session_id, **self._voice_server_update_data},
         )
 
     async def connect(
@@ -139,7 +139,7 @@ class Music(commands.Cog):
             await ctx.author.voice.channel.connect(cls=Player)
 
         async with self.bot.session.get(f'http://{CONFIG["SERVER"]["host"]}:{CONFIG["SERVER"]["port"]}/search?query={query}') as response:
-            await self.bot._send_payload("play", data={"guild_id": str(ctx.guild.id), "track_id": (await response.json())[0]})
+            await self.bot._send_payload('play', data={'guild_id': str(ctx.guild.id), 'track_id': (await response.json())[0]})
 
 
 cd = CD()

@@ -104,11 +104,11 @@ class App(aiohttp.web.Application):
                 logger.error(f'Received payload with invalid JSON format from <{client_name}>.\nPayload: {message.data}')
                 continue
 
-            if "op" not in payload:
+            if 'op' not in payload:
                 logger.error(f'Received payload with missing "op" key from <{client_name}>. Discarding.')
                 continue
 
-            if "d" not in payload:
+            if 'd' not in payload:
                 logger.error(f'Received payload with missing "d" key from <{client_name}>. Discarding.')
                 continue
 
