@@ -5,17 +5,23 @@ import logging
 import logging.handlers
 import os
 
+# packages
+import colorama
+
 # local
 from src.config import CONFIG
 
 
-RESET: str = '\u001b[0m'
-BOLD: str = '\u001b[1m'
-REVERSE: str = '\u001b[7m'
-GREEN: str = '\u001b[32m'
-YELLOW: str = '\u001b[33m'
-MAGENTA: str = '\u001b[35m'
-CYAN: str = '\u001b[36m'
+colorama.init(autoreset=True)
+
+
+RESET: str = '\033[0m'
+BOLD: str = '\033[1m'
+REVERSE: str = '\033[7m'
+GREEN: str = '\033[1;32m'
+YELLOW: str = '\033[1;33m'
+MAGENTA: str = '\033[1;35m'
+CYAN: str = '\033[1;36m'
 
 loggers: dict[str, logging.Logger] = {}
 
@@ -48,8 +54,8 @@ def setup() -> None:
         file_handler.setFormatter(
             logging.Formatter(
                 fmt='%(asctime)s '
-                    '[%(name) 30s] '
-                    '[%(filename) 20s] '
+                    '[%(name) 10s] '
+                    '[%(filename) 10s] '
                     '[%(levelname) 7s] '
                     '%(message)s',
                 datefmt='%I:%M:%S %p %d/%m/%Y'
@@ -61,10 +67,10 @@ def setup() -> None:
         stream_handler = logging.StreamHandler()
         stream_handler.setFormatter(
             logging.Formatter(
-                fmt=f'{CYAN}%(asctime)s{RESET} '
-                    f'{YELLOW}[%(name) 30s]{RESET} '
-                    f'{GREEN}[%(filename) 20s]{RESET} '
-                    f'{BOLD}{REVERSE}{MAGENTA}[%(levelname) 7s]{RESET} '
+                fmt=f'{colorama.Fore.CYAN}%(asctime)s{colorama.Style.RESET_ALL} '
+                    f'{colorama.Fore.YELLOW}[%(name) 30s]{colorama.Style.RESET_ALL} '
+                    f'{colorama.Fore.GREEN}[%(filename) 20s]{colorama.Style.RESET_ALL} '
+                    f'{colorama.Back.LIGHTCYAN_EX}{colorama.Fore.BLACK}[%(levelname) 7s]{colorama.Style.RESET_ALL} '
                     f'%(message)s',
                 datefmt='%I:%M:%S %p %d/%m/%Y',
             )
