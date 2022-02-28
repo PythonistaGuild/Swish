@@ -117,7 +117,6 @@ class App(aiohttp.web.Application):
                 continue
 
             player: Player | None = websocket['players'].get(guild_id)
-
             if not player:
                 player = Player(self, websocket, guild_id, user_id)
                 websocket['players'][guild_id] = player

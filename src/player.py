@@ -111,8 +111,9 @@ class Player:
 
         if self._runner is not None:
             self._runner.cancel()
-
         self._runner = loop.create_task(self._reconnect_handler())
+
+        self._websocket['players'][self._guild_id] = self
 
     async def _reconnect_handler(self) -> None:
 
