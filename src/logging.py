@@ -38,7 +38,7 @@ def setup() -> None:
 
     for name, logger in loggers.items():
 
-        path = CONFIG["LOGGING"]["path"]
+        path = CONFIG['LOGGING']['path']
 
         if not os.path.exists(path):
             os.makedirs(path)
