@@ -66,9 +66,9 @@ develop = false
 
 [package.source]
 type = "git"
-url = "git@github.com:EvieePy/discord-ext-native-voice"
+url = "git@github.com:Axelancerr/discord-ext-native-voice"
 reference = "master"
-resolved_reference = "80b291ab40dce20eb8dd57103dd5829aafde6a8b"
+resolved_reference = "9e878789765ca32ebc48f8412d0121d80156c9fd"
 
 [[package]]
 name = "discord.py"
@@ -191,7 +191,7 @@ websockets = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10.0"
-content-hash = "8f7c47c7f0978d51ccc8059a76039ad6607784fb29b6c9d3a3d0470d55d0dbf2"
+content-hash = "97c5505a153665dc0527a1db9606639276bf8c607ef778aa295716096015669b"
 
 [metadata.files]
 aiohttp = [

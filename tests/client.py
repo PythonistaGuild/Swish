@@ -13,8 +13,7 @@ from src.config import CONFIG
 URL = f'ws://{CONFIG["SERVER"]["host"]}:{CONFIG["SERVER"]["port"]}'
 HEADERS = {
     'Authorization': CONFIG['SERVER']['password'],
-    'User-Agent':    'swish-client v0.0.1a',
-    'Client-Token':  'HUIDUIDaiuhd^bAbhjsa',
+    'User-Agent':    'Python/3.10 swish.py/v0.0.1a',
 }
 PAYLOAD = {
     'op': 'play',

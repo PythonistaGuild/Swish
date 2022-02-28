@@ -12,16 +12,14 @@ import colorama
 from src.config import CONFIG
 
 
-colorama.init(autoreset=True)
+def setup_logging() -> None:
 
-loggers: dict[str, logging.Logger] = {
-    "swish":   logging.getLogger("swish"),
-    "aiohttp": logging.getLogger("aiohttp"),
-}
+    colorama.init(autoreset=True)
 
-
-def setup() -> None:
-
+    loggers: dict[str, logging.Logger] = {
+        'swish':   logging.getLogger('swish'),
+        'aiohttp': logging.getLogger('aiohttp'),
+    }
     loggers['swish'].setLevel(CONFIG['LOGGING']['LEVEL']['swish'])
     loggers['aiohttp'].setLevel(CONFIG['LOGGING']['LEVEL']['aiohttp'])
 
