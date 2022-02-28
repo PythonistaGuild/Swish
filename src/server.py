@@ -1,17 +1,12 @@
 from __future__ import annotations
 
 # stdlib
-import asyncio
 import logging
 import uuid
-from collections.abc import Awaitable, Callable
-from typing import Any
 
 # packages
 import aiohttp
 import aiohttp.web
-import aiohttp.web_response
-import discord
 
 # local
 from .config import CONFIG
@@ -22,28 +17,14 @@ from .search import Search
 
 logger: logging.Logger = logging.getLogger('swish.server')
 
-JSON = dict[str, Any]
-Websocket = aiohttp.web.WebSocketResponse
-OpHandler = Callable[[Websocket, JSON], Awaitable[None]]
-
 
 class Server(aiohttp.web.Application):
 
     def __init__(self):
         super().__init__()
 
-        self.rotator = IpRotator()
-        self.searcher = Search()
-
-        self.WS_OP_HANDLERS: dict[str, OpHandler] = {
-            'connect':         self.connect,
-            'destroy':         self.destroy,
-            'play':            self.play,
-            'stop':            self.stop,
-            'set_position':    self.set_position,
-            'set_pause_state': self.set_pause_state,
-            'set_filter':      self.set_filter,
-        }
+        self.rotator: IpRotator = IpRotator()
+        self.search: Search = Search()
 
         self.add_routes(
             [
@@ -53,7 +34,7 @@ class Server(aiohttp.web.Application):
             ]
         )
 
-        self.connections: dict[str, Websocket] = {}
+        self.connections: dict[str, aiohttp.web.WebSocketResponse] = {}
 
     async def _run_app(self) -> None:
 
@@ -74,134 +55,89 @@ class Server(aiohttp.web.Application):
 
         logger.info(f'Swish server started on {host}:{port}')
 
-    async def websocket_handler(self, request: aiohttp.web.Request) -> Websocket:
+    async def websocket_handler(self, request: aiohttp.web.Request) -> aiohttp.web.WebSocketResponse:
 
-        logger.info(f'Received request to upgrade websocket from:: {request.remote}.')
+        logger.info(f'Incoming websocket connection request from "{request.remote}".')
 
         websocket = aiohttp.web.WebSocketResponse()
         await websocket.prepare(request)
 
-        password = CONFIG['SERVER']['password']
-        auth = request.headers.get('Authorization')
+        # User-Agent
+        user_agent = request.headers.get('User-Agent')
 
-        if password != auth:
-            logger.error(f'Authorization failed for request from:: {request.remote} with Authorization: {auth}')
-            raise aiohttp.web.HTTPUnauthorized
+        if not user_agent:
+            logger.error(f'Websocket connection from "{request.remote}" failed due to missing User-Agent header.')
+            await websocket.close(code=4000, message=b'Missing "User-Agent" header.')
+            return websocket
 
-        client_token = request.headers.get('Client-Token')
-        if not client_token:
-            logger.error('Unable to complete websocket handshake as your Client-Token header is missing.')
-            raise aiohttp.web.HTTPBadRequest
+        client_name = f'{user_agent} ({request.remote})'
 
-        if not request.headers.get('User-Agent'):
-            logger.warning('No User-Agent header provided. Please provide a User-Agent in future connections.')
+        # User-Id
+        user_id = request.headers.get('User-Id')
+
+        if not user_id:
+            logger.error(f'Websocket connection from "{request.remote}" failed due to missing User-Id header.')
+            await websocket.close(code=4000, message=b'Missing "User-Id" header.')
+            return websocket
+
+        # Authorization
+        authorization = request.headers.get('Authorization')
+
+        if CONFIG['SERVER']['password'] != authorization:
+            logger.error(f'Websocket connection from <{client_name}> failed due to mismatched Authorization header: {authorization}')
+            await websocket.close(code=4001, message=b'Authorization failed.')
+            return websocket
+
+        # Finalise connection
+        websocket['user_agent'] = user_agent
+        websocket['client_name'] = client_name
+        websocket['user_id'] = user_id
+        websocket['players'] = {}
 
         connection_id = str(uuid.uuid4())
-
-        await asyncio.sleep(5)
-
-        try:
-            logger.info('Logging into discord with provided token...')
-
-            client = discord.Client()
-            await client.login(client_token)
-
-            asyncio.create_task(client.connect())
-        except discord.DiscordException:
-            logger.error('Unable to complete websocket handshake, improper or invalid Client-Token passed.')
-            raise aiohttp.web.HTTPUnauthorized
-
-        websocket['client'] = client
-        websocket['Connection-ID'] = connection_id
+        websocket['connection_id'] = connection_id
         self.connections[connection_id] = websocket
 
-        await client.wait_until_ready()
-        logger.info(f'Successful websocket handshake completed from:: {request.remote}.')
+        logger.info(f'Websocket connection from <{client_name}> established.')
 
+        # Handle incoming messages
         async for message in websocket:  # type: aiohttp.WSMessage
 
             try:
-                data = message.json()
+                payload = message.json()
+                logger.debug(f'Received payload from <{client_name}>.\nPayload: {payload}')
             except Exception:
-                logger.error(f'Unable to parse JSON from:: {request.remote}.')
+                logger.error(f'Received payload with invalid JSON format from <{client_name}>.\nPayload: {message.data}')
                 continue
 
-            op = data.get('op', None)
-            if not (handler := self.WS_OP_HANDLERS.get(op)):
-                logger.error(f'No handler registered for op:: {op}.')
+            op = payload.get('op')
+            data = payload.get('d')
+
+            if not op or not data:
+                logger.error(f'Received payload with missing "op" and/or "data" keys from <{client_name}>. Discarding.')
                 continue
 
-            await handler(websocket, data['d'])
+            if not (guild_id := data.get('guild_id', None)):
+                logger.error(f'Received payload with missing "guild_id" data key from <{client_name}>. Discarding.')
+                continue
+
+            players: dict[int, Player] = websocket['players']
+
+            if not (player := players.get(guild_id)):
+                player = Player(guild_id, user_id, self)
+                websocket['players'][guild_id] = player
+
+            await player._handle_payload(op, data)
 
         return websocket
-
-    # Websocket handlers
-
-    async def connect(self, ws: Websocket, data: JSON) -> None:
-
-        try:
-            guild_id = int(data['guild_id'])
-            channel_id = int(data['channel_id'])
-        except ValueError:
-            logger.error('Invalid ID passed for connect.')
-            return
-
-        player = Player(guild_id, server=self, client=ws['client'])
-
-        await player.connect(channel_id)
-
-        try:
-            ws["players"][guild_id] = player
-        except KeyError:
-            ws['players'] = {guild_id: player}
-
-    async def destroy(self, ws: Websocket, data: JSON) -> None:
-
-        guild_id = data['guild_id']
-
-        if not (player := ws['players'].get(guild_id)):  # type: Player
-            return
-
-        await player.destroy()
-        del ws['players'][guild_id]
-
-    async def play(self, ws: Websocket, data: JSON) -> None:
-
-        try:
-            guild_id = int(data['guild_id'])
-        except ValueError:
-            logger.error('Invalid guild_id passed for play.')
-
-        player: Player | None = ws['players'][guild_id]
-        if not player:
-            return
-
-        await player.play(
-            data['track_id'],
-            start_position=data.get('start_position', None),
-            end_position=data.get('end_position', None),
-            replace=data.get('replace', None)
-        )
-
-    async def stop(self, ws: Websocket, data: JSON) -> None:
-        print('Received "stop" op')
-
-    async def set_position(self, ws: Websocket, data: JSON) -> None:
-        print('Received "set_position" op')
-
-    async def set_pause_state(self, ws: Websocket, data: JSON) -> None:
-        print('Received "set_pause_state" op')
-
-    async def set_filter(self, ws: Websocket, data: JSON) -> None:
-        print('Received "set_filter" op')
 
     # Rest handlers
 
     async def search_tracks(self, request: aiohttp.web.Request) -> aiohttp.web.Response:
         search = request.query.get('query')
 
-        data = await self.searcher.search_youtube(search, server=self)
-        return aiohttp.web_response.json_response(data=data, status=200)
+        data = await self.search.search_youtube(search, server=self)
+        return aiohttp.web.json_response(data=data, status=200)
 
     async def debug_stats(self, request: aiohttp.web.Request) -> aiohttp.web.Response:
         raise NotImplementedError

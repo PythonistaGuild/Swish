@@ -1,18 +1,17 @@
 [SERVER]
-host = "localhost"
-port = 3555
+host = "127.0.0.1"
+port = 8000
 password = "helloworld!"
 
 [IP]
-blocks = ['2001:470:5521::/48', '1001:470:5521::/48']
+blocks = []
 
 [LOGGING]
+path = "logs/"
+backup_count = 5
+max_bytes = 5242880  # 5mb
 
-    path = "logs/"
-    backup_count = 5
-    max_bytes = 5242880  # 5mb
-
-    [LOGGING.LEVEL]
-        swish = "DEBUG"
-        discord = "NOTSET"
-        aiohttp = "NOTSET"
+[LOGGING.LEVEL]
+swish = "DEBUG"
+discord = "NOTSET"
+aiohttp = "NOTSET"

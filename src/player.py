@@ -1,11 +1,18 @@
 from __future__ import annotations
 
 # stdlib
+import asyncio
 import logging
+from typing import TYPE_CHECKING, Any
 
 # packages
-import discord
-from discord.ext.native_voice import VoiceClient
+from discord.backoff import ExponentialBackoff
+from discord.ext.native_voice import _native_voice
+
+
+if TYPE_CHECKING:
+    # local
+    from .server import Server
 
 
 logger: logging.Logger = logging.getLogger('swish.player')
@@ -13,64 +20,101 @@ logger: logging.Logger = logging.getLogger('swish.player')
 
 class Player:
 
-    def __init__(self, guild_id: int, *, server, client: discord.Client) -> None:
-        self.guild_id: int = guild_id
-        self.channel_id: int = None  # type: ignore
+    def __init__(self, guild_id: str, user_id: str, server: Server) -> None:
 
-        self.server = server
-        self._client = client
-        self.vc: VoiceClient
+        self._guild_id: str = guild_id
+        self._server: Server = server
 
-        self.current_track_id: str | None = None
+        self._connector: _native_voice.VoiceConnector = _native_voice.VoiceConnector()
+        self._connector.user_id = int(user_id)
 
-    async def connect(self, channel_id: int) -> None:
-        guild: discord.Guild = self._client.get_guild(self.guild_id)
-        channel: discord.VoiceChannel = guild.get_channel(channel_id)
+        self._connection: _native_voice.VoiceConnection | None = None
+        self._runner: asyncio.Task[None] | None = None
 
-        if not channel:
-            logger.warning('Unable to find provided channel to connect to. '
-                           'Check the guild_id and channel_id and try again.')
-
-            return
-
-        logger.info(f'Attempting to join channel: {channel_id} - {channel.name}')
-        self.vc = await channel.connect(cls=VoiceClient)
-
-    async def destroy(self) -> None:
-        # TODO: ext-native-voice stuff
-        pass
-
-    async def play(
+    async def _handle_payload(
         self,
-        track_id: str,
-        /,
-        *,
-        start_position: int | None = None,
-        end_position: int | None = None,
-        replace: bool | None = None,
+        op: str,
+        data: dict[str, Any]
     ) -> None:
 
-        if not self.vc:
-            logger.error('No voice channel to play for this guild. Try connecting to a channel first.')
+        if op == "voice_update":
+            await self._voice_update(data)
+        elif op == 'play':
+            await self._play(data)
+
+    async def _voice_update(self, data: dict[str, Any]) -> None:
+
+        self._connector.session_id = data['session_id']
+        token = data.get('token')
+        server_id = data['guild_id']
+        endpoint = data.get('endpoint')
+
+        if endpoint is None or token is None:
             return
 
-        self.current_track_id = track_id
+        endpoint, _, _ = endpoint.rpartition(':')
+        if endpoint.startswith('wss://'):
+            endpoint = endpoint[6:]
 
-        decoded = self.server.searcher.decode_track(track_id)
-        track = await self.server.searcher.search_youtube(decoded['id'], raw=True)
+        self._connector.update_socket(token, server_id, endpoint)
+        await self.connect()
+
+    async def _play(self, data: dict[str, Any]) -> None:
+
+        decoded = self._server.search.decode_track(data['track_id'])
+        track = await self._server.search.search_youtube(decoded['id'], raw=True)
         track = track[0]
 
-        logger.info(f'Request to play track: {track_id} - {decoded["title"]}')
-        self.vc.play(track['url'])
+        if self._connection:
+            self._connection.play(track['url'])
 
-    def stop(self) -> None:
-        pass
+    #
 
-    def set_position(self) -> None:
-        pass
+    async def connect(self) -> None:
 
-    def set_pause_state(self) -> None:
-        pass
+        loop = asyncio.get_running_loop()
+        self._connection = await self._connector.connect(loop)
 
-    def set_filter(self) -> None:
-        pass
+        if self._runner is not None:
+            self._runner.cancel()
+
+        self._runner = loop.create_task(self.reconnect_handler())
+
+    async def reconnect_handler(self) -> None:
+
+        backoff = ExponentialBackoff()
+        loop = asyncio.get_running_loop()
+
+        while True:
+            try:
+                await self._connection.run(loop)
+            except _native_voice.ConnectionClosed as e:
+                print('Voice connection got a clean close %s', e)
+                await self.disconnect()
+                return
+            except _native_voice.ConnectionError as e:
+                print('Internal voice error: %s', e)
+                await self.disconnect()
+                return
+            except _native_voice.ReconnectError:
+
+                retry = backoff.delay()
+                print('Disconnected from voice... Reconnecting in %.2fs.', retry)
+
+                await asyncio.sleep(retry)
+                try:
+                    await self.connect()
+                except asyncio.TimeoutError:
+                    # at this point we've retried 5 times... let's continue the loop.
+                    print('Could not connect to voice... Retrying...')
+                    continue
+            else:
+                # The function above is actually a loop already
+                # So if we're here then it exited normally
+                await self.disconnect()
+                return
+
+    async def disconnect(self) -> None:
+        if self._connection is not None:
+            self._connection.disconnect()
+            self._connection = None

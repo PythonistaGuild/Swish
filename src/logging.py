@@ -15,8 +15,8 @@ from src.config import CONFIG
 colorama.init(autoreset=True)
 
 loggers: dict[str, logging.Logger] = {
-    "swish":   logging.getLogger("swish"),
-    "aiohttp": logging.getLogger("aiohttp"),
+    'swish':   logging.getLogger('swish'),
+    'aiohttp': logging.getLogger('aiohttp'),
 }
 
 
