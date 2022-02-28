@@ -2,7 +2,6 @@ from __future__ import annotations
 
 # stdlib
 import logging
-import uuid
 
 # packages
 import aiohttp
@@ -34,8 +33,6 @@ class App(aiohttp.web.Application):
             ]
         )
 
-        self.connections: dict[str, aiohttp.web.WebSocketResponse] = {}
-
     async def _run_app(self) -> None:
 
         logger.debug('Starting Swish server...')
@@ -57,6 +54,7 @@ class App(aiohttp.web.Application):
 
     async def websocket_handler(self, request: aiohttp.web.Request) -> aiohttp.web.WebSocketResponse:
 
+        # Initialise connection
         logger.info(f'Incoming websocket connection request from "{request.remote}".')
 
         websocket = aiohttp.web.WebSocketResponse()
@@ -94,10 +92,6 @@ class App(aiohttp.web.Application):
         websocket['user_id'] = user_id
         websocket['players'] = {}
 
-        connection_id = str(uuid.uuid4())
-        websocket['connection_id'] = connection_id
-        self.connections[connection_id] = websocket
-
         logger.info(f'Websocket connection from <{client_name}> established.')
 
         # Handle incoming messages
@@ -110,24 +104,25 @@ class App(aiohttp.web.Application):
                 logger.error(f'Received payload with invalid JSON format from <{client_name}>.\nPayload: {message.data}')
                 continue
 
-            op = payload.get('op')
-            data = payload.get('d')
-
-            if not op or not data:
-                logger.error(f'Received payload with missing "op" and/or "data" keys from <{client_name}>. Discarding.')
+            if "op" not in payload:
+                logger.error(f'Received payload with missing "op" key from <{client_name}>. Discarding.')
                 continue
 
-            if not (guild_id := data.get('guild_id', None)):
+            if "d" not in payload:
+                logger.error(f'Received payload with missing "d" key from <{client_name}>. Discarding.')
+                continue
+
+            if not (guild_id := payload['d'].get('guild_id')):
                 logger.error(f'Received payload with missing "guild_id" data key from <{client_name}>. Discarding.')
                 continue
 
-            players: dict[int, Player] = websocket['players']
+            player: Player | None = websocket['players'].get(guild_id)
 
-            if not (player := players.get(guild_id)):
-                player = Player(guild_id, user_id, self)
+            if not player:
+                player = Player(self, websocket, guild_id, user_id)
                 websocket['players'][guild_id] = player
 
-            await player._handle_payload(op, data)
+            await player.handle_payload(payload)
 
         return websocket
 

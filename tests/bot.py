@@ -133,7 +133,8 @@ class Music(commands.Cog):
     @commands.command()
     async def play(self, ctx: commands.Context, *, query: str) -> None:
 
-        await ctx.author.voice.channel.connect(cls=Player)
+        if not ctx.guild.me.voice:
+            await ctx.author.voice.channel.connect(cls=Player)
 
         async with self.bot.session.get(f'http://{CONFIG["SERVER"]["host"]}:{CONFIG["SERVER"]["port"]}/search?query={query}') as response:
             await self.bot._send_payload("play", data={"guild_id": str(ctx.guild.id), "track_id": (await response.json())[0]})

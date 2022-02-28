@@ -3,9 +3,12 @@ from __future__ import annotations
 # stdlib
 import asyncio
 import logging
+from collections.abc import Awaitable, Callable
 from typing import TYPE_CHECKING, Any
 
 # packages
+import aiohttp
+import aiohttp.web
 from discord.backoff import ExponentialBackoff
 from discord.ext.native_voice import _native_voice
 
@@ -20,44 +23,63 @@ logger: logging.Logger = logging.getLogger('swish.player')
 
 class Player:
 
-    def __init__(self, guild_id: str, user_id: str, app: App) -> None:
+    def __init__(
+        self,
+        app: App,
+        websocket: aiohttp.web.WebSocketResponse,
+        guild_id: str,
+        user_id: str
+    ) -> None:
 
-        self._guild_id: str = guild_id
         self._server: App = app
+        self._websocket: aiohttp.web.WebSocketResponse = websocket
+        self._guild_id: str = guild_id
+        self._user_id: str = user_id
 
         self._connector: _native_voice.VoiceConnector = _native_voice.VoiceConnector()
-        self._connector.user_id = int(user_id)
-
         self._connection: _native_voice.VoiceConnection | None = None
         self._runner: asyncio.Task[None] | None = None
 
-    async def _handle_payload(
-        self,
-        op: str,
-        data: dict[str, Any]
-    ) -> None:
+        self._connector.user_id = int(user_id)
 
-        if op == "voice_update":
-            await self._voice_update(data)
-        elif op == 'play':
-            await self._play(data)
+        self.OP_HANDLERS: dict[str, Callable[[dict[str, Any]], Awaitable[None]]] = {
+            'voice_update': self._voice_update,
+            'destroy': self._destroy,
+            'play': self._play,
+            'stop': self._stop,
+            'set_pause_state': self._set_pause_state,
+            'set_position': self._set_position,
+            'set_filter': self._set_filter,
+        }
+
+    # websocket op handlers
+
+    async def handle_payload(self, payload: dict[str, Any]) -> None:
+
+        handler = self.OP_HANDLERS.get(payload['op'])
+        if not handler:
+            logger.error(f'Received payload with unknown "op" key from <{self._websocket["client_name"]}>. Discarding.')
+            return
+
+        await handler(payload['d'])
 
     async def _voice_update(self, data: dict[str, Any]) -> None:
 
         self._connector.session_id = data['session_id']
-        token = data.get('token')
-        server_id = data['guild_id']
-        endpoint = data.get('endpoint')
+        token = data['token']
+        guild_id = data['guild_id']
 
-        if endpoint is None or token is None:
+        if (endpoint := data.get('endpoint')) is None:
             return
 
         endpoint, _, _ = endpoint.rpartition(':')
-        if endpoint.startswith('wss://'):
-            endpoint = endpoint[6:]
+        endpoint = endpoint.removeprefix('wss://')
 
-        self._connector.update_socket(token, server_id, endpoint)
-        await self.connect()
+        self._connector.update_socket(token, guild_id, endpoint)
+        await self._connect()
+
+    async def _destroy(self, data: dict[str, Any]) -> None:
+        raise NotImplementedError
 
     async def _play(self, data: dict[str, Any]) -> None:
 
@@ -68,9 +90,21 @@ class Player:
         if self._connection:
             self._connection.play(track['url'])
 
-    #
+    async def _stop(self, data: dict[str, Any]) -> None:
+        raise NotImplementedError
 
-    async def connect(self) -> None:
+    async def _set_pause_state(self, data: dict[str, Any]) -> None:
+        raise NotImplementedError
+
+    async def _set_position(self, data: dict[str, Any]) -> None:
+        raise NotImplementedError
+
+    async def _set_filter(self, data: dict[str, Any]) -> None:
+        raise NotImplementedError
+
+    # internal connection handlers
+
+    async def _connect(self) -> None:
 
         loop = asyncio.get_running_loop()
         self._connection = await self._connector.connect(loop)
@@ -78,43 +112,57 @@ class Player:
         if self._runner is not None:
             self._runner.cancel()
 
-        self._runner = loop.create_task(self.reconnect_handler())
+        self._runner = loop.create_task(self._reconnect_handler())
 
-    async def reconnect_handler(self) -> None:
+    async def _reconnect_handler(self) -> None:
 
-        backoff = ExponentialBackoff()
         loop = asyncio.get_running_loop()
+        backoff = ExponentialBackoff()
 
         while True:
+
             try:
                 await self._connection.run(loop)
-            except _native_voice.ConnectionClosed as e:
-                print('Voice connection got a clean close %s', e)
-                await self.disconnect()
+
+            except _native_voice.ConnectionClosed:
+                await self._disconnect()
                 return
-            except _native_voice.ConnectionError as e:
-                print('Internal voice error: %s', e)
-                await self.disconnect()
+
+            except _native_voice.ConnectionError:
+                await self._disconnect()
                 return
+
             except _native_voice.ReconnectError:
 
                 retry = backoff.delay()
-                print('Disconnected from voice... Reconnecting in %.2fs.', retry)
-
                 await asyncio.sleep(retry)
+
                 try:
-                    await self.connect()
+                    await self._connect()
                 except asyncio.TimeoutError:
-                    # at this point we've retried 5 times... let's continue the loop.
-                    print('Could not connect to voice... Retrying...')
                     continue
+
             else:
-                # The function above is actually a loop already
-                # So if we're here then it exited normally
-                await self.disconnect()
+                await self._disconnect()
                 return
 
-    async def disconnect(self) -> None:
-        if self._connection is not None:
-            self._connection.disconnect()
-            self._connection = None
+    async def _disconnect(self) -> None:
+
+        if self._connection is None:
+            return
+
+        self._connection.disconnect()
+        self._connection = None
+
+        del self._websocket['players'][self._guild_id]
+
+    # utility
+
+    def is_playing(self) -> bool:
+        return self._connection.is_playing() if self._connection else False
+
+    def is_paused(self) -> bool:  # TODO: implement rust stuff for this
+        return self._connection.is_paused() if self._connection else False
+
+    def _debug_info(self) -> dict[str, Any]:
+        return self._connection.get_state() if self._connection else {}
