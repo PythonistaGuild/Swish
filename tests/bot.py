@@ -136,8 +136,17 @@ class Music(commands.Cog):
         if not ctx.guild.me.voice:
             await ctx.author.voice.channel.connect(cls=Player)
 
-        async with self.bot.session.get(f'http://{CONFIG["SERVER"]["host"]}:{CONFIG["SERVER"]["port"]}/search?query={query}') as response:
-            await self.bot._send_payload('play', data={'guild_id': str(ctx.guild.id), 'track_id': (await response.json())[0]})
+        async with self.bot.session.get(
+                url='http://127.0.0.1:8000/search',
+                params={"query": query},
+        ) as response:
+
+            data = await response.json()
+            print(data)
+            await self.bot._send_payload(
+                'play',
+                data={'guild_id': str(ctx.guild.id), 'track_id': data[0]['id']},
+            )
 
 
 cd = CD()
