@@ -6,6 +6,9 @@ password = "helloworld!"
 [IP]
 blocks = []
 
+[SEARCH]
+max_results = 10
+
 [LOGGING]
 path = "logs/"
 backup_count = 5

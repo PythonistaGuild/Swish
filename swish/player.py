@@ -44,7 +44,7 @@ class Player:
         user_id: str
     ) -> None:
 
-        self._server: App = app
+        self._app: App = app
         self._websocket: aiohttp.web.WebSocketResponse = websocket
         self._guild_id: str = guild_id
         self._user_id: str = user_id
@@ -96,12 +96,11 @@ class Player:
 
     async def _play(self, data: dict[str, Any]) -> None:
 
-        decoded = self._server.search.decode_track(data['track_id'])
-        track = await self._server.search.search_youtube(decoded['id'], raw=True)
-        track = track[0]
+        info = self._app._decode_track_id(data['track_id'])
+        url = await self._app._get_playback_url(info['url'])
 
         if self._connection:
-            self._connection.play(track['url'])
+            self._connection.play(url)
 
     async def _stop(self, data: dict[str, Any]) -> None:
         raise NotImplementedError

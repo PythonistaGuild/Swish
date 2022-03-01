@@ -17,15 +17,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from __future__ import annotations
 
+import base64
+import contextlib
+import functools
+import json
 import logging
+import os
+from typing import Any
 
 import aiohttp
 import aiohttp.web
+import yt_dlp
 
 from .config import CONFIG
 from .ip_rotator import IpRotator
 from .player import Player
-from .search import Search
 
 
 logger: logging.Logger = logging.getLogger('swish.app')
@@ -36,14 +42,10 @@ class App(aiohttp.web.Application):
     def __init__(self):
         super().__init__()
 
-        self.rotator: type[IpRotator] = IpRotator
-        self.search: Search = Search()
-
         self.add_routes(
             [
                 aiohttp.web.get('/', self.websocket_handler),
                 aiohttp.web.get('/search', self.search_tracks),
-                aiohttp.web.get('/debug', self.debug_stats)
             ]
         )
 
@@ -51,11 +53,13 @@ class App(aiohttp.web.Application):
 
         logger.debug('Starting Swish server...')
 
+        runner = aiohttp.web.AppRunner(
+            app=self
+        )
+        await runner.setup()
+
         host = CONFIG['SERVER']['host']
         port = CONFIG['SERVER']['port']
-
-        runner = aiohttp.web.AppRunner(app=self)
-        await runner.setup()
 
         site = aiohttp.web.TCPSite(
             runner=runner,
@@ -142,11 +146,93 @@ class App(aiohttp.web.Application):
 
     # Rest handlers
 
+    @staticmethod
+    def _encode_track_info(info: dict[str, Any], /) -> str:
+        return base64.b64encode(json.dumps(info).encode()).decode()
+
+    @staticmethod
+    def _decode_track_id(_id: str, /) -> dict[str, Any]:
+        return json.loads(base64.b64decode(_id).decode())
+
+    _SEARCH_OPTIONS: dict[str, Any] = {
+        'quiet':              True,
+        'no_warnings':        True,
+        'format':             'bestaudio/best',
+        'restrictfilenames':  False,
+        'ignoreerrors':       True,
+        'logtostderr':        False,
+        'noplaylist':         False,
+        'nocheckcertificate': True,
+        'default_search':     'auto',
+        'source_address':     '0.0.0.0',
+    }
+
+    _SOURCE_MAPPING: dict[str, str] = {
+        'youtube':    f'ytsearch{CONFIG["SEARCH"]["max_results"]}:',
+        'soundcloud': f'scsearch{CONFIG["SEARCH"]["max_results"]}:',
+        'niconico':   f'nicosearch{CONFIG["SEARCH"]["max_results"]}:',
+        'bilibili':   f'bilisearch{CONFIG["SEARCH"]["max_results"]}:',
+        'none':       ''
+    }
+
+    async def _ytdl_search(self, query: str, internal: bool) -> Any:
+
+        self._SEARCH_OPTIONS['source_address'] = IpRotator.rotate()
+        self._SEARCH_OPTIONS['extract_flat'] = not internal
+
+        with yt_dlp.YoutubeDL(self._SEARCH_OPTIONS) as YTDL:
+            with contextlib.redirect_stdout(open(os.devnull, 'w')):
+                _search: Any = await self._loop.run_in_executor(
+                    None,
+                    functools.partial(YTDL.extract_info, query, download=False)
+                )
+
+        return YTDL.sanitize_info(_search)  # type: ignore
+
+    async def _get_playback_url(self, url: str) -> str:
+
+        search = await self._ytdl_search(url, internal=True)
+        return search["url"]
+
+    async def _get_tracks(self, query: str) -> list[dict[str, Any]]:
+
+        search = await self._ytdl_search(query, internal=False)
+
+        entries = search.get('entries', [search])
+        tracks: list[dict[str, Any]] = []
+
+        for entry in entries:
+
+            info: dict[str, Any] = {
+                'title':      entry['title'],
+                'identifier': entry['id'],
+                'url':        entry['url'],
+                'length':     int(entry.get('duration', 0) * 1000),
+                'author':     entry.get('uploader', 'Unknown'),
+                'author_id':  entry.get('channel_id', None),
+                'thumbnail':  entry.get('thumbnail', [None])[0],
+                'is_live':    entry.get('live_status', False),
+            }
+            tracks.append(
+                {
+                    'id':   self._encode_track_info(info),
+                    'info': info
+                }
+            )
+
+        return tracks
+
     async def search_tracks(self, request: aiohttp.web.Request) -> aiohttp.web.Response:
-        search = request.query.get('query')
 
-        data = await self.search.search_youtube(search)
-        return aiohttp.web.json_response(data=data, status=200)
+        query = request.query.get('query')
+        if not query:
+            return aiohttp.web.json_response({'error': 'Missing "query" query parameter.'}, status=400)
 
-    async def debug_stats(self, request: aiohttp.web.Request) -> aiohttp.web.Response:
-        raise NotImplementedError
+        source: str = request.query.get('source', 'none')
+
+        prefix = self._SOURCE_MAPPING.get(source)
+        if prefix is None:
+            return aiohttp.web.json_response({'error': 'Invalid "source" query parameter.'}, status=400)
+
+        tracks = await self._get_tracks(f'{prefix}{query}')
+        return aiohttp.web.json_response(tracks)
