@@ -21,16 +21,16 @@ speedups = ["aiodns", "brotlipy", "cchardet"]
 name = "altgraph"
 version = "0.17.2"
 description = "Python graph (network) package"
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = "*"
 
 [[package]]
 name = "astunparse"
 version = "1.6.3"
 description = "An AST unparser for Python"
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = "*"
 
 [package.dependencies]
@@ -63,8 +63,8 @@ tests_no_zope = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>
 name = "braceexpand"
 version = "0.1.7"
 description = "Bash-style brace expansion for Python"
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = "*"
 
 [[package]]
@@ -79,8 +79,8 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 name = "click"
 version = "8.0.4"
 description = "Composable command line interface toolkit"
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = ">=3.6"
 
 [package.dependencies]
@@ -93,21 +93,6 @@ description = "Cross-platform colored terminal text."
 category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
-
-[[package]]
-name = "discord-ext-native-voice"
-version = "0.1.0"
-description = ""
-category = "main"
-optional = false
-python-versions = "*"
-develop = false
-
-[package.source]
-type = "git"
-url = "git@github.com:Axelancerr/discord-ext-native-voice"
-reference = "master"
-resolved_reference = "9e878789765ca32ebc48f8412d0121d80156c9fd"
 
 [[package]]
 name = "discord.py"
@@ -136,8 +121,8 @@ resolved_reference = "45d498c1b76deaf3b394d17ccf56112fa691d160"
 name = "future"
 version = "0.18.2"
 description = "Clean single-source support for Python 3 and 2"
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
@@ -152,8 +137,8 @@ python-versions = ">=3.5"
 name = "import-expression"
 version = "1.1.4"
 description = "Parses a superset of Python allowing for inline module import expressions"
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = "*"
 
 [package.dependencies]
@@ -163,25 +148,11 @@ astunparse = ">=1.6.3,<2.0.0"
 test = ["pytest", "pytest-cov"]
 
 [[package]]
-name = "isort"
-version = "5.10.1"
-description = "A Python utility / library to sort Python imports."
-category = "dev"
-optional = false
-python-versions = ">=3.6.1,<4.0"
-
-[package.extras]
-pipfile_deprecated_finder = ["pipreqs", "requirementslib"]
-requirements_deprecated_finder = ["pipreqs", "pip-api"]
-colors = ["colorama (>=0.4.3,<0.5.0)"]
-plugins = ["setuptools"]
-
-[[package]]
 name = "jishaku"
 version = "2.3.2"
 description = "A discord.py extension including useful tools for bot development and debugging."
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = ">=3.8.0"
 
 [package.dependencies]
@@ -200,8 +171,8 @@ voice = ["youtube-dl"]
 name = "macholib"
 version = "1.15.2"
 description = "Mach-O header analysis and editing"
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = "*"
 
 [package.dependencies]
@@ -227,8 +198,8 @@ python-versions = ">=3.5, <4"
 name = "pefile"
 version = "2021.9.3"
 description = "Python PE parsing module"
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = ">=3.6.0"
 
 [package.dependencies]
@@ -246,8 +217,8 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 name = "pyinstaller"
 version = "4.5.1"
 description = "PyInstaller bundles a Python application and all its dependencies into a single package."
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = ">=3.6"
 
 [package.dependencies]
@@ -266,24 +237,24 @@ hook_testing = ["pytest (>=2.7.3)", "execnet (>=1.5.0)", "psutil"]
 name = "pyinstaller-hooks-contrib"
 version = "2022.2"
 description = "Community maintained hooks for PyInstaller"
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = ">=3.7"
 
 [[package]]
 name = "pywin32-ctypes"
 version = "0.2.0"
 description = ""
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = "*"
 
 [[package]]
 name = "setuptools"
 version = "60.9.3"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = ">=3.7"
 
 [package.extras]
@@ -295,8 +266,8 @@ testing-integration = ["pytest", "pytest-xdist", "pytest-enabler", "virtualenv (
 name = "six"
 version = "1.16.0"
 description = "Python 2 and 3 compatibility utilities"
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
@@ -327,8 +298,8 @@ python-versions = ">=3.7"
 name = "wheel"
 version = "0.37.1"
 description = "A built-package format for Python"
-category = "dev"
-optional = false
+category = "main"
+optional = true
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 
 [package.extras]
@@ -359,10 +330,14 @@ mutagen = "*"
 pycryptodomex = "*"
 websockets = "*"
 
+[extras]
+build = ["pyinstaller"]
+tests = ["jishaku"]
+
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10.0"
-content-hash = "97c5505a153665dc0527a1db9606639276bf8c607ef778aa295716096015669b"
+content-hash = "59273d808e3391caaf98ee5f8258b448ca88aaf1095c0dff06822c2da1acc7fd"
 
 [metadata.files]
 aiohttp = [
@@ -436,7 +411,6 @@ colorama = [
     {file = "colorama-0.4.4-py2.py3-none-any.whl", hash = "sha256:9f47eda37229f68eee03b24b9748937c7dc3868f906e8ba69fbcbdd3bc5dc3e2"},
     {file = "colorama-0.4.4.tar.gz", hash = "sha256:5941b2b48a20143d2267e95b1c2a7603ce057ee39fd88e7329b0c292aa16869b"},
 ]
-discord-ext-native-voice = []
 "discord.py" = []
 future = [
     {file = "future-0.18.2.tar.gz", hash = "sha256:b1bead90b70cf6ec3f0710ae53a525360fa360d306a86583adc6bf83a4db537d"},
@@ -448,10 +422,6 @@ idna = [
 import-expression = [
     {file = "import_expression-1.1.4-py3-none-any.whl", hash = "sha256:292099910a4dcc65ba562377cd2265487ba573dd63d73bdee5deec36ca49555b"},
     {file = "import_expression-1.1.4.tar.gz", hash = "sha256:06086a6ab3bfa528b1c478e633d6adf2b3a990e31440f6401b0f3ea12b0659a9"},
-]
-isort = [
-    {file = "isort-5.10.1-py3-none-any.whl", hash = "sha256:6f62d78e2f89b4500b080fe3a81690850cd254227f27f75c3a0c491a1f351ba7"},
-    {file = "isort-5.10.1.tar.gz", hash = "sha256:e8443a5e7a020e9d7f97f1d7d9cd17c88bcb3bc7e218bf9cf5095fe550be2951"},
 ]
 jishaku = [
     {file = "jishaku-2.3.2-py3-none-any.whl", hash = "sha256:a395781b152a63b38c3cf48ffe94b218b49327f3d22536f3ab9a8b0c7ed62576"},

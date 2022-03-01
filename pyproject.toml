@@ -1,26 +1,29 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+
 [tool.poetry]
 name        = "Swish"
 version     = "0.0.1a"
-description = ""    # Fill in later
-license     = ""    # Fill in later
-authors     = []    # Fill in later
-readme      = ""    # Fill in later
+description = ""
+license     = ""
+authors     = []
+readme      = ""
 
 
 [tool.poetry.dependencies]
-python  = "^3.10.0"
-
-aiohttp                     = "^3.7.0"
-yt-dlp                      = "^2022.2.0"
-toml                        = "^0.10.0"
-colorama                    = "^0.4.0"
-"discord.py"                = { git = "git@github.com:Rapptz/discord.py",                branch = "master" }
-"discord-ext-native-voice"  = {  }
+python          = "^3.10.0"
+aiohttp         = "^3.7.0"
+colorama        = "^0.4.0"
+toml            = "^0.10.0"
+yt-dlp          = "^2022.2.0"
+"discord.py"    = { git = "git@github.com:Rapptz/discord.py", branch = "master" }
 
 
 [tool.poetry.dev-dependencies]
-jishaku = "*"
-pyinstaller = "*"
+pyinstaller = { version = "*" }
+jishaku     = { version = "*" }
 
 
 [tool.pyright]
@@ -31,11 +34,11 @@ pythonVersion           = "3.10"
 typeCheckingMode        = "strict"
 useLibraryCodeForTypes  = true
 
-reportMissingTypeStubs = false
-reportPrivateImportUsage = false
-reportPrivateUsage = false
-reportUnknownMemberType = false
-reportFunctionMemberAccess = false
-reportUnknownArgumentType = false
-reportImportCycles = false
-reportConstantRedefinition = false
+reportMissingTypeStubs      = false
+reportPrivateImportUsage    = false
+reportPrivateUsage          = false
+reportUnknownMemberType     = false
+reportFunctionMemberAccess  = false
+reportUnknownArgumentType   = false
+reportImportCycles          = false
+reportConstantRedefinition  = false

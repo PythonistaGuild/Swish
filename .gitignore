@@ -1,15 +1,20 @@
-/logs
-/.idea
-/dist
-/dist_no_bin
-/build
-/pyu-data
+# general
+.idea/
+logs/
 
 *.pyc
 
-swish.spec
-keypack.pyu
 
-build/
-*.egg-info
+# discord-ext-native-voice
 target/
+*.egg-info/
+
+*.pyd
+
+
+# pyinstaller
+build/
+dist/
+dist_no_bin/
+
+swish.spec
