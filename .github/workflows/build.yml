@@ -1,0 +1,80 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+    types: [opened, edited]
+
+jobs:
+  Ubuntu:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Set Up CPython
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+
+      - name: Ensure pip
+        run: |
+          python -m ensurepip
+          pip install setuptools
+
+      - name: Build swish
+        run: |
+          python launcher.py
+
+  Windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Set Up CPython
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+
+      - name: Ensure pip
+        run: |
+          python -m ensurepip
+          pip install setuptools
+
+      - name: Build swish
+        run: |
+          python launcher.py
+
+  MacOS:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Set Up CPython
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+
+      - name: Install Deps
+        run: |
+          python -m ensurepip
+          pip install setuptools
+          pip install native/requirements-dev.txt
+          pip install native/requirements.txt
+          pip install requirements-dev.txt
+          pip install requirements.txt
+
+      - name: Build swish
+        run: |
+          python launcher.py --no-deps
