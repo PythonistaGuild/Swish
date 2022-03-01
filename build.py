@@ -25,15 +25,3 @@ PyInstaller.__main__.run([
     '--add-binary',
     f'./bin/ffmpeg.exe{delim}.'
 ])
-
-# Install without ffmpeg binary
-PyInstaller.__main__.run([
-    'launcher.py',
-    '--name',
-    'swish',
-    '--distpath',
-    'dist_no_bin',
-    '--exclude-module',
-    '_bootlocale',
-    '--onefile',
-])
