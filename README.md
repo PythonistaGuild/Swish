@@ -12,3 +12,14 @@ contribute either by code or by valuable feedback.
 
 Swish aims to provide an ease of use application with native builds for Windows, MacOS and
 Linux.
+
+## Development Installation
+- Download and install rust with rustup.
+- Run: `py -3.10 -m pip install -U -r requirements.txt`
+- Run: `py -3.10 -m pip install -U -r requirements-dev.txt`
+- Run: `py -3.10 launcher.py`
+- swish should now be up and running.
+
+## Development distribution builds
+- Windows:
+  - Run: `py -3.10 build.py`
