@@ -76,7 +76,7 @@ impl FFmpegPCMAudio {
                 "-ac",
                 "2",
                 "-loglevel",
-                "warning",
+                "panic",
                 "pipe:1",
             ])
             .stdout(Stdio::piped())
