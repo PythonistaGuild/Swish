@@ -5,7 +5,7 @@ import asyncio
 loop = asyncio.new_event_loop()
 
 
-from src.logging import setup_logging
+from swish.logging import setup_logging
 setup_logging()
 
 
@@ -25,7 +25,7 @@ BANNER = """
 print(BANNER)
 
 
-from src.app import App
+from swish.app import App
 app = App()
 
 

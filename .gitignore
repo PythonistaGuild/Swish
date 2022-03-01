@@ -9,3 +9,7 @@
 
 swish.spec
 keypack.pyu
+
+build/
+*.egg-info
+target/
