@@ -121,9 +121,29 @@ impl VoiceConnection {
         Ok(())
     }
 
+    fn pause(&mut self) {
+        if let Some(player) = &self.player {
+            player.pause();
+        }
+    }
+
+    fn resume(&mut self) {
+        if let Some(player) = &self.player {
+            player.resume();
+        }
+    }
+
     fn is_playing(&self) -> bool {
         if let Some(player) = &self.player {
             player.is_playing()
+        } else {
+            false
+        }
+    }
+
+    fn is_paused(&self) -> bool {
+        if let Some(player) = &self.player {
+            player.is_paused()
         } else {
             false
         }
