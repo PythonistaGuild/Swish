@@ -22,6 +22,8 @@ jobs:
 
       - name: Install Deps
         run: |
+          sudo apt update
+          sudo apt install -y libopus-dev
           python -m ensurepip
           pip install setuptools
           pip install -r native/requirements-dev.txt
@@ -31,7 +33,7 @@ jobs:
 
       - name: Build swish
         run: |
-          python launcher.py --no-deps
+          python build.py --no-deps
 
   Windows:
     runs-on: windows-latest
@@ -58,7 +60,7 @@ jobs:
 
       - name: Build swish
         run: |
-          python launcher.py --no-deps
+          python build.py --no-deps
 
   MacOS:
     runs-on: macos-latest
@@ -85,4 +87,4 @@ jobs:
 
       - name: Build swish
         run: |
-          python launcher.py --no-deps
+          python build.py --no-deps
