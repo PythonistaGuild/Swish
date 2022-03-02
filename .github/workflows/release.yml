@@ -29,9 +29,12 @@ jobs:
         run: |
           python build.py --no-deps
 
-      - name: Upload to release
-        uses: JasonEtco/upload-to-release@master
-        with:
-          args: dist/swish.exe
+      - name: Upload binaries
+        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          asset_path: ./dist/swish.exe
+          asset_name: swish.exe
+          asset_content_type: application/exe
+
