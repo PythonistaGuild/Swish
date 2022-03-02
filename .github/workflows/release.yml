@@ -1,7 +1,7 @@
 name: build-release
 
 on: release
-  types: [published]
+types: [published]
 
 jobs:
   Windows:
