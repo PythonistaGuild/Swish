@@ -27,6 +27,7 @@ from typing import Any
 
 import aiohttp
 import aiohttp.web
+import yarl
 import yt_dlp
 
 from .config import CONFIG
@@ -231,11 +232,14 @@ class App(aiohttp.web.Application):
         if not query:
             return aiohttp.web.json_response({'error': 'Missing "query" query parameter.'}, status=400)
 
-        source: str = request.query.get('source', 'none')
+        source = request.query.get('source', 'youtube')
+        if (url := yarl.URL(query)) and url.host and url.scheme:
+            source = 'none'
 
         prefix = self._SOURCE_MAPPING.get(source)
         if prefix is None:
             return aiohttp.web.json_response({'error': 'Invalid "source" query parameter.'}, status=400)
 
         tracks = await self._get_tracks(f'{prefix}{query}')
+
         return aiohttp.web.json_response(tracks)
