@@ -157,7 +157,10 @@ class App(aiohttp.web.Application):
     _SEARCH_OPTIONS: dict[str, Any] = {
         'quiet':              True,
         'no_warnings':        True,
-        'format':             'bestaudio/best',
+        'format':             'bestaudio[ext=webm][acodec=opus]/'
+                              'bestaudio[ext=mp4][acodec=aac]/'
+                              'bestvideo[ext=mp4][acodec=aac]/'
+                              'best',
         'restrictfilenames':  False,
         'ignoreerrors':       True,
         'logtostderr':        False,
