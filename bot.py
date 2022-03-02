@@ -40,7 +40,7 @@ class CD(commands.Bot):
             url=f'ws://{CONFIG["SERVER"]["host"]}:{CONFIG["SERVER"]["port"]}',
             headers={
                 'Authorization': CONFIG['SERVER']['password'],
-                'User-Agent':    'Python/3.10 swish.py/v0.0.1a',
+                'User-Agent':    'Python/v3.10.1,swish.py/v0.0.1a',
                 'User-Id':       str(self.user.id),
             },
         )
@@ -142,7 +142,7 @@ class Music(commands.Cog):
 
         async with self.bot.session.get(
                 url='http://127.0.0.1:8000/search',
-                params={"query": query},
+                params={'query': query},
         ) as response:
 
             data = await response.json()

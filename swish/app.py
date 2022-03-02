@@ -15,6 +15,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+
 from __future__ import annotations
 
 import base64
@@ -52,8 +53,6 @@ class App(aiohttp.web.Application):
 
     async def _run_app(self) -> None:
 
-        logger.debug('Starting Swish server...')
-
         runner = aiohttp.web.AppRunner(
             app=self
         )
@@ -74,7 +73,7 @@ class App(aiohttp.web.Application):
     async def websocket_handler(self, request: aiohttp.web.Request) -> aiohttp.web.WebSocketResponse:
 
         # Initialise connection
-        logger.info(f'Incoming websocket connection request from "{request.remote}".')
+        logger.info(f'<{request.remote}> - Incoming websocket connection request.')
 
         websocket = aiohttp.web.WebSocketResponse()
         await websocket.prepare(request)
@@ -83,8 +82,8 @@ class App(aiohttp.web.Application):
         user_agent = request.headers.get('User-Agent')
 
         if not user_agent:
-            logger.error(f'Websocket connection from "{request.remote}" failed due to missing User-Agent header.')
-            await websocket.close(code=4000, message=b'Missing "User-Agent" header.')
+            logger.error(f'<{request.remote}> - Websocket connection failed due to missing \'User-Agent\' header.')
+            await websocket.close(code=4000, message=b'Missing \'User-Agent\' header.')
             return websocket
 
         client_name = f'{user_agent} ({request.remote})'
@@ -93,15 +92,15 @@ class App(aiohttp.web.Application):
         user_id = request.headers.get('User-Id')
 
         if not user_id:
-            logger.error(f'Websocket connection from "{request.remote}" failed due to missing User-Id header.')
-            await websocket.close(code=4000, message=b'Missing "User-Id" header.')
+            logger.error(f'<{client_name}> - Websocket connection failed due to missing \'User-Id\' header.')
+            await websocket.close(code=4000, message=b'Missing \'User-Id\' header.')
             return websocket
 
         # Authorization
         authorization = request.headers.get('Authorization')
 
         if CONFIG['SERVER']['password'] != authorization:
-            logger.error(f'Websocket connection from <{client_name}> failed due to mismatched Authorization header: {authorization}')
+            logger.error(f'<{client_name}> - Websocket connection failed due to mismatched \'Authorization\' header: {authorization}')
             await websocket.close(code=4001, message=b'Authorization failed.')
             return websocket
 
@@ -111,38 +110,35 @@ class App(aiohttp.web.Application):
         websocket['user_id'] = user_id
         websocket['players'] = {}
 
-        logger.info(f'Websocket connection from <{client_name}> established.')
+        logger.info(f'<{client_name}> - Websocket connection established.')
 
         # Handle incoming messages
         async for message in websocket:  # type: aiohttp.WSMessage
 
             try:
                 payload = message.json()
-                logger.debug(f'Received payload from <{client_name}>.\nPayload: {payload}')
             except Exception:
-                logger.error(f'Received payload with invalid JSON format from <{client_name}>.\nPayload: {message.data}')
+                logger.error(f'<{client_name}> - Received payload with invalid JSON format.\nPayload: {message.data}')
                 continue
 
             if 'op' not in payload:
-                logger.error(f'Received payload with missing "op" key from <{client_name}>. Discarding.')
+                logger.error(f'<{client_name}> - Received payload with missing \'op\' key.\nPayload: {payload}')
                 continue
-
             if 'd' not in payload:
-                logger.error(f'Received payload with missing "d" key from <{client_name}>. Discarding.')
+                logger.error(f'<{client_name}> - Received payload with missing \'d\' key.\nPayload: {payload}')
                 continue
 
-            if not (guild_id := payload['d'].get('guild_id')):
-                logger.error(f'Received payload with missing "guild_id" data key from <{client_name}>. Discarding.')
+            if not (guild_id := payload['d'].get('guild_id', None)):
+                logger.error(f'<{client_name}> - Received payload with missing \'guild_id\' data key. Payload: {payload}')
                 continue
 
-            player: Player | None = websocket['players'].get(guild_id)
-            if not player:
+            if not (player := websocket['players'].get(guild_id)):  # type: Player | None
                 player = Player(self, websocket, guild_id, user_id)
                 websocket['players'][guild_id] = player
 
             await player.handle_payload(payload)
 
-        logger.info(f'Websocket connection from <{client_name}> closed.')
+        logger.info(f'<{client_name}> - Websocket connection closed.')
         return websocket
 
     # Rest handlers
@@ -196,7 +192,7 @@ class App(aiohttp.web.Application):
     async def _get_playback_url(self, url: str) -> str:
 
         search = await self._ytdl_search(url, internal=True)
-        return search["url"]
+        return search['url']
 
     async def _get_tracks(self, query: str) -> list[dict[str, Any]]:
 
@@ -230,7 +226,7 @@ class App(aiohttp.web.Application):
 
         query = request.query.get('query')
         if not query:
-            return aiohttp.web.json_response({'error': 'Missing "query" query parameter.'}, status=400)
+            return aiohttp.web.json_response({'error': 'Missing \'query\' query parameter.'}, status=400)
 
         source = request.query.get('source', 'youtube')
         if (url := yarl.URL(query)) and url.host and url.scheme:
@@ -238,7 +234,7 @@ class App(aiohttp.web.Application):
 
         prefix = self._SOURCE_MAPPING.get(source)
         if prefix is None:
-            return aiohttp.web.json_response({'error': 'Invalid "source" query parameter.'}, status=400)
+            return aiohttp.web.json_response({'error': 'Invalid \'source\' query parameter.'}, status=400)
 
         tracks = await self._get_tracks(f'{prefix}{query}')
 
