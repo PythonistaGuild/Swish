@@ -18,7 +18,7 @@ delim = ';' if platform.system() == 'Windows' else ':'
 PyInstaller.__main__.run([
     'launcher.py',
     '--name',
-    '{"swish" if platform.system() != "Windows" else "swish-linux"}',
+    '{"swish" if platform.system() == "Windows" else "swish-linux" if platform.system() == "Linux" else "swish"}',
     '--distpath',
     'dist',
     '--exclude-module',
