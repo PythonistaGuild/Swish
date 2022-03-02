@@ -71,3 +71,35 @@ jobs:
           file: ./dist/swish
           asset_name: swish-linux_x86-64
           tag: ${{ github.ref }}
+
+
+  MacOS:
+    runs-on: macos-latest
+
+    steps:
+      - name: Pull source
+        uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+
+      - name: Install Deps
+        run: |
+          python -m ensurepip
+          pip install setuptools
+          pip install -r native/requirements-dev.txt
+          pip install -r native/requirements.txt
+          pip install -r requirements-dev.txt
+          pip install -r requirements.txt
+      - name: Build swish
+        run: |
+          python build.py --no-deps
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./dist/swish
+          asset_name: swish-macOS_x86-64
+          tag: ${{ github.ref }}
