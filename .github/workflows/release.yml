@@ -37,6 +37,7 @@ jobs:
           file: ./dist/swish.exe
           asset_name: swish.exe
           tag: ${{ github.ref }}
+  
 
   Linux:
     runs-on: ubuntu-latest
