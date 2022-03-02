@@ -1,0 +1,36 @@
+name: build-release
+
+on: release
+
+jobs:
+  build-release-Windows:
+    name: Build and upload binaries for Swish
+    runs-on: windows-latest
+    steps:
+      - name: Pull source
+        uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+
+      - name: Install Deps
+        run: |
+          python -m ensurepip
+          pip install setuptools
+          pip install -r native/requirements-dev.txt
+          pip install -r native/requirements.txt
+          pip install -r requirements-dev.txt
+          pip install -r requirements.txt
+
+       - name: Build swish
+        run: |
+          python build.py --no-deps
+
+      - name: Upload to release
+        uses: JasonEtco/upload-to-release@master
+        with:
+          args: dist/swish.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
