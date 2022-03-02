@@ -24,6 +24,7 @@ PyInstaller.__main__.run([
     '--exclude-module',
     '_bootlocale',
     '--onefile',
-    '--add-binary',
-    f'./bin/ffmpeg.exe{delim}.'
+    f'{"--add-binary'" if platform.system() != "Linux" else ""}',
+    f'{"./bin/ffmpeg.exe;." if platform.system() == "Windows" else "" if platform.system() == "Linux" else "./bin/ffmpeg:."}',
+
 ])
