@@ -10,7 +10,7 @@ import toml
 from discord.ext import commands
 
 
-CONFIG: dict[str, Any] = toml.load('../swish.toml')  # type: ignore
+CONFIG: dict[str, Any] = toml.load('swish.toml')  # type: ignore
 
 
 class CD(commands.Bot):
@@ -114,7 +114,11 @@ class Player(discord.VoiceProtocol):
         self_mute: bool = False,
         self_deaf: bool = True,
     ) -> None:
-        await self.voice_channel.guild.change_voice_state(channel=self.voice_channel, self_mute=self_mute, self_deaf=self_deaf)
+        await self.voice_channel.guild.change_voice_state(
+            channel=self.voice_channel,
+            self_mute=self_mute,
+            self_deaf=self_deaf
+        )
 
     async def disconnect(
         self,
@@ -142,7 +146,6 @@ class Music(commands.Cog):
         ) as response:
 
             data = await response.json()
-            print(data)
             await self.bot._send_payload(
                 'play',
                 data={'guild_id': str(ctx.guild.id), 'track_id': data[0]['id']},
