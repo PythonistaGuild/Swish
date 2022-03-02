@@ -4,8 +4,8 @@ on: release
 
 jobs:
   Windows:
-    name: Build and upload binaries for Swish
     runs-on: windows-latest
+
     steps:
       - name: Pull source
         uses: actions/checkout@v2
