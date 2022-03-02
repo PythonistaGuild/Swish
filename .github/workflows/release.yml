@@ -68,7 +68,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ./dist/swish
+          file: ./dist/swish-linux
           asset_name: swish-linux_x86-64
           tag: ${{ github.ref }}
 
