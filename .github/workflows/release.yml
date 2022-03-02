@@ -35,11 +35,11 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ./dist/swish.exe
-          asset_name: swish.exe
+          asset_name: swish-windows_x86-64.exe
           tag: ${{ github.ref }}
   
 
-  Linux:
+  Ubuntu:
     runs-on: ubuntu-latest
 
     steps:
@@ -69,5 +69,5 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ./dist/swish
-          asset_name: swish-linux
+          asset_name: swish-linux_x86-64
           tag: ${{ github.ref }}
