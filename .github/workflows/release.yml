@@ -3,7 +3,7 @@ name: build-release
 on: release
 
 jobs:
-  build-release-Windows:
+  Windows:
     name: Build and upload binaries for Swish
     runs-on: windows-latest
     steps:
@@ -24,7 +24,7 @@ jobs:
           pip install -r requirements-dev.txt
           pip install -r requirements.txt
 
-       - name: Build swish
+      - name: Build swish
         run: |
           python build.py --no-deps
 
