@@ -36,5 +36,5 @@ jobs:
         with:
           asset_path: ./dist/swish.exe
           asset_name: swish.exe
-          asset_content_type: application/exe
+          asset_content_type: application/octet-stream
 
