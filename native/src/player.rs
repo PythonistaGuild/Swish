@@ -60,7 +60,7 @@ impl FFmpegPCMAudio {
         let process = Command::new("ffmpeg")
             .args(&[
                 "-reconnect",
-                "1", 
+                "1",
                 "-reconnect_streamed",
                 "1",
                 "-reconnect_delay_max",
@@ -80,6 +80,7 @@ impl FFmpegPCMAudio {
                 "pipe:1",
             ])
             .stdout(Stdio::piped())
+            .stderr(Stdio::null()) // no output lol
             .spawn()?;
         Ok(Self { process })
     }

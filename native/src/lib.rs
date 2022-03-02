@@ -111,7 +111,7 @@ impl VoiceConnection {
         let source = Box::new(player::FFmpegPCMAudio::new(input.as_str())?);
         let player = player::AudioPlayer::new(
             |error| {
-                println!("Audio Player Error: {:?}", error);
+                // println!("Audio Player Error: {:?}", error);
             },
             Arc::clone(&self.protocol),
             Arc::new(Mutex::new(source)),
