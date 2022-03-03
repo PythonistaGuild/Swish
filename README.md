@@ -10,7 +10,7 @@ and more, with more being actively developed daily.
 Swish is currently **EARLY ALPHA** and should be used only by developers wishing to
 contribute either by code or by valuable feedback.
 
-Swish aims to provide an ease of use application with native builds for Windows, MacOS and
+Swish aims to provide an ease of use application with native builds for Windows, macOS and
 Linux.
 
 ## Development Installation
