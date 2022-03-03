@@ -125,6 +125,10 @@ class Player:
             logger.error(self._MISSING_KEY_MESSAGE('play', 'track_id'))
             return
 
+        # TODO: handle start_time
+        # TODO: handle end_time
+        # TODO: handle replace
+
         info = self._app._decode_track_id(track_id)
         url = await self._app._get_playback_url(info['url'])
 
@@ -135,6 +139,9 @@ class Player:
 
         if not self._connection:
             logger.error(self._NO_CONNECTION_MESSAGE('stop'))
+            return
+        if not self.is_playing():
+            logger.error(f'{self._LOG_PREFIX} attempted \'stop\' op while no tracks are playing.')
             return
 
         self._connection.stop()
@@ -157,6 +164,10 @@ class Player:
         if not self._connection:
             logger.error(self._NO_CONNECTION_MESSAGE('set_position'))
             return
+        if not self.is_playing():
+            logger.error(f'{self._LOG_PREFIX} attempted \'set_position\' op while no tracks are playing.')
+            return
+
         if not (position := data.get('position')):
             logger.error(self._MISSING_KEY_MESSAGE('set_position', 'position'))
             return
