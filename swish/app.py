@@ -32,7 +32,7 @@ import yarl
 import yt_dlp
 
 from .config import CONFIG
-from .ip_rotator import IpRotator
+from .rotator import IpRotator
 from .player import Player
 
 

@@ -15,6 +15,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+
 from __future__ import annotations
 
 import logging
@@ -24,6 +25,37 @@ import os
 import colorama
 
 from .config import CONFIG
+
+
+class ColourFormatter(logging.Formatter):
+
+    def __init__(self, enabled: bool) -> None:
+
+        self.enabled: bool = enabled
+
+        if self.enabled:
+            fmt = f'{colorama.Fore.CYAN}[%(asctime)s] {colorama.Style.RESET_ALL}' \
+                  f'{colorama.Fore.LIGHTCYAN_EX}[%(name) 16s] {colorama.Style.RESET_ALL}' \
+                  f'%(colour)s[%(levelname) 8s] {colorama.Style.RESET_ALL}' \
+                  f'%(message)s'
+        else:
+            fmt = '[%(asctime)s] [%(name) 16s] [%(levelname) 8s] %(message)s'
+
+        super().__init__(
+            fmt=fmt,
+            datefmt='%I:%M:%S %Y/%m/%d'
+        )
+
+        self.COLOURS: dict[int, str] = {
+            logging.DEBUG:   colorama.Fore.MAGENTA,
+            logging.INFO:    colorama.Fore.GREEN,
+            logging.WARNING: colorama.Fore.YELLOW,
+            logging.ERROR:   colorama.Fore.RED,
+        }
+
+    def format(self, record: logging.LogRecord) -> str:
+        record.colour = self.COLOURS[record.levelno]  # type: ignore
+        return super().format(record)
 
 
 def setup_logging() -> None:
@@ -52,28 +84,15 @@ def setup_logging() -> None:
             backupCount=CONFIG['LOGGING']['backup_count'],
             encoding='utf-8',
         )
-        file_handler.setFormatter(
-            logging.Formatter(
-                fmt='%(asctime)s '
-                    '[%(name) 16s] '
-                    '[%(filename) 16s] '
-                    '[%(levelname) 7s] '
-                    '%(message)s',
-                datefmt='%I:%M:%S %p %d/%m/%Y'
-            )
-        )
+        file_handler.setFormatter(ColourFormatter(enabled=False))
         logger.addHandler(file_handler)
 
         # stdout handler
         stream_handler = logging.StreamHandler()
-        stream_handler.setFormatter(
-            logging.Formatter(
-                fmt=f'{colorama.Fore.CYAN}%(asctime)s{colorama.Style.RESET_ALL} '
-                    f'{colorama.Fore.YELLOW}[%(name) 16s]{colorama.Style.RESET_ALL} '
-                    f'{colorama.Fore.GREEN}[%(filename) 16s]{colorama.Style.RESET_ALL} '
-                    f'{colorama.Back.LIGHTCYAN_EX}{colorama.Fore.BLACK}[%(levelname) 7s]{colorama.Style.RESET_ALL} '
-                    f'%(message)s',
-                datefmt='%I:%M:%S %p %d/%m/%Y',
-            )
-        )
+        stream_handler.setFormatter(ColourFormatter(enabled=True))
         logger.addHandler(stream_handler)
+
+    loggers["swish"].debug("Logging setup complete.")
+    loggers["swish"].info("Logging setup complete.")
+    loggers["swish"].warning("Logging setup complete.")
+    loggers["swish"].error("Logging setup complete.")
