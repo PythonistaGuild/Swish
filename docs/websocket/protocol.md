@@ -1,6 +1,4 @@
-# Protocol
-
-### Opening a connection:
+# Opening a Connection
 
 Opening a websocket connection requires all the following headers be set.
 
@@ -10,9 +8,9 @@ User-Id: The user id of the bot connecting to Swish.
 User-Agent: The client library and version used to connect to Swish.
 ```
 
-### Close codes
+# Close Codes
 
-All the intentional websocket close codes are listed below.
+All intentional websocket close codes are listed below.
 
 | Close code | Reason                                     |
 |:-----------|:-------------------------------------------|

@@ -1,4 +1,4 @@
-# WebSocket Payloads
+# Payload Format
 
 Payloads being sent and received by Swish should be JSON objects and match the following format.
 
@@ -13,8 +13,8 @@ Received payloads that do not match this format are ignored.
 
 - The `op` key should contain a string value indicating the payload type being sent or received.
   See [Op Codes](#op-codes) for a list of possible values.
-- The `d` key should be another JSON object containing the payload data. All keys shown in the `d` key are required
-  unless otherwise noted.
+- The `d` key should be another JSON object containing the payload data. All fields shown in the `d` key below are
+  required unless otherwise noted.
 
 # Op Codes
 
@@ -31,6 +31,8 @@ Received payloads that do not match this format are ignored.
 
 *<sub>payloads that are sent *from* Swish to clients.</sub>
 
+**<sub>`player` is just another name for a guild.</sub>
+
 ## voice_update
 
 ```json
@@ -45,16 +47,18 @@ Received payloads that do not match this format are ignored.
 }
 ```
 
-- `guild_id`: the id of the guild player this `voice_update` is for.
+- `guild_id`: The id of the player this `voice_update` is for.
 - `session_id`: voice state session id received from a
   discord [`VOICE_STATE_UPDATE`](https://discord.com/developers/docs/topics/gateway#voice-state-update) event.
 - `token`: voice connection token received from a
   discord [`VOICE_SERVER_UPDATE`](https://discord.com/developers/docs/topics/gateway#voice-server-update) event.
-- `endpoint`: voice server endpoint from a
+- `endpoint`: voice server endpoint received from a
   discord [`VOICE_SERVER_UPDATE`](https://discord.com/developers/docs/topics/gateway#voice-server-update) event.
 
-<sub>the `endpoint` key can be null when discord is 'awaiting endpoint', swish accommodates for clients sending a
-null `endpoint` by ignoring the `voice_update`.</sub>
+<sub>the `endpoint` field of
+a [`VOICE_SERVER_UPDATE`](https://discord.com/developers/docs/topics/gateway#voice-server-update) can sometimes be null
+when the voice server is unavailable. Make sure you check for this before sending a `voice_update`
+request.</sub>
 
 ## destroy
 
@@ -67,7 +71,7 @@ null `endpoint` by ignoring the `voice_update`.</sub>
 }
 ```
 
-- `guild_id`: The id of the guild player you want to destroy.
+- `guild_id`: The id of the player you want to destroy.
 
 ## play
 
@@ -84,7 +88,7 @@ null `endpoint` by ignoring the `voice_update`.</sub>
 }
 ```
 
-- `guild_id`: The id of the guild player you want to play a track on.
+- `guild_id`: The id of the player you want to play a track on.
 - `track_id`: The id of the track you want to play.
 - (optional) `start_time`: The time (in milliseconds) to start playing the given track at.
 - (optional) `end_time`: The time (in milliseconds) to stop playing the given track at.
@@ -101,7 +105,7 @@ null `endpoint` by ignoring the `voice_update`.</sub>
 }
 ```
 
-- `guild_id`: The id of the guild player you want to stop playing a track on.
+- `guild_id`: The id of the player you want to stop playing a track on.
 
 ## set_pause_state
 
@@ -115,8 +119,8 @@ null `endpoint` by ignoring the `voice_update`.</sub>
 }
 ```
 
-- `guild_id`: The id of the guild player you want to set the pause state for.
-- `state`: Whether the player should be paused or not, true for paused, false for not-paused.
+- `guild_id`: The id of the player you want to set the pause state for.
+- `state`: A true or false value indicating whether the player should be paused or not.
 
 ## set_position
 
@@ -130,7 +134,7 @@ null `endpoint` by ignoring the `voice_update`.</sub>
 }
 ```
 
-- `guild_id`: The id of the guild player you want to set the position in the current track for.
+- `guild_id`: The id of the player you want to the set the position for.
 - `position`: The position (in milliseconds) to set the current track to.
 
 ## set_filter

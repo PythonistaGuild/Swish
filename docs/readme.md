@@ -1,10 +1,16 @@
 # Swish API Documentation
 
-Swish does stuff and things idk I don't write about stuff
+Swish does stuff and things, IDK, I don't write about stuff like this.
 
-### WebSocket
+## WebSocket
+
 - [Protocol](websocket/protocol.md)
-- [Payload](websocket/payloads.md)
+    - [Connection](websocket/protocol.md#opening-a-connection)
+    - [Close Codes](websocket/protocol.md#close-codes)
+- [Payloads](websocket/payloads.md)
+    - [Format](websocket/payloads.md#payload-format)
+    - [Ops](websocket/payloads.md#op-codes)
 
-### Rest API
+## Rest API
+
 - [Search](rest/search.md)
