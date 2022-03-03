@@ -94,21 +94,28 @@ class Player:
 
     async def _voice_update(self, data: dict[str, Any]) -> None:
 
-        self._connector.session_id = data['session_id']
-
-        if not (endpoint := data.get('endpoint')):
+        if not (session_id := data.get('session_id')):
+            logger.error(self._MISSING_KEY_MESSAGE('voice_update', 'session_id'))
             return
+        if not (token := data.get('token')):
+            logger.error(self._MISSING_KEY_MESSAGE('voice_update', 'token'))
+            return
+        if not (endpoint := data.get('endpoint')):
+            logger.error(self._MISSING_KEY_MESSAGE('voice_update', 'endpoint'))
+            return
+
+        self._connector.session_id = session_id
 
         endpoint, _, _ = endpoint.rpartition(':')
         endpoint = endpoint.removeprefix('wss://')
-        self._endpoint = endpoint
 
         self._connector.update_socket(
-            data['token'],
+            token,
             data['guild_id'],
             endpoint
         )
         await self._connect()
+        logger.info(f'{self._LOG_PREFIX} connected to internal voice server \'{endpoint}\'.')
 
     async def _destroy(self, _: dict[str, Any]) -> None:
 
@@ -129,11 +136,11 @@ class Player:
         # TODO: handle end_time
         # TODO: handle replace
 
-        info = self._app._decode_track_id(track_id)
-        url = await self._app._get_playback_url(info['url'])
+        track_info = self._app._decode_track_id(track_id)
+        url = await self._app._get_playback_url(track_info['url'])
 
         self._connection.play(url)
-        logger.info(f'{self._LOG_PREFIX} started playing track \'{info["title"]}\' by \'{info["author"]}\'.')
+        logger.info(f'{self._LOG_PREFIX} started playing track \'{track_info["title"]}\' by \'{track_info["author"]}\'.')
 
     async def _stop(self, _: dict[str, Any]) -> None:
 
@@ -193,7 +200,6 @@ class Player:
         self._runner = loop.create_task(self._reconnect_handler())
 
         self._websocket['players'][self._guild_id] = self
-        logger.info(f'{self._LOG_PREFIX} connected to internal voice server \'{self._endpoint}\'.')
 
     async def _reconnect_handler(self) -> None:
 
@@ -237,7 +243,6 @@ class Player:
         self._connection = None
 
         del self._websocket['players'][self._guild_id]
-        logger.info(f'{self._LOG_PREFIX} disconnected from internal voice server \'{self._endpoint}\'.')
 
     # utility
 
