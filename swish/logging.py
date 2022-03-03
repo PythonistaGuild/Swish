@@ -91,8 +91,3 @@ def setup_logging() -> None:
         stream_handler = logging.StreamHandler()
         stream_handler.setFormatter(ColourFormatter(enabled=True))
         logger.addHandler(stream_handler)
-
-    loggers["swish"].debug("Logging setup complete.")
-    loggers["swish"].info("Logging setup complete.")
-    loggers["swish"].warning("Logging setup complete.")
-    loggers["swish"].error("Logging setup complete.")
