@@ -11,8 +11,10 @@ Payloads being sent and received by Swish should be JSON objects and match the f
 
 Received payloads that do not match this format are ignored.
 
-- The `op` key should contain a string value indicating the payload type being sent or received. See [Op Codes](#op-codes) for a list of possible values.
-- The `d` key should be another JSON object containing the payload data. All keys shown in the `d` key are required unless otherwise noted.
+- The `op` key should contain a string value indicating the payload type being sent or received.
+  See [Op Codes](#op-codes) for a list of possible values.
+- The `d` key should be another JSON object containing the payload data. All keys shown in the `d` key are required
+  unless otherwise noted.
 
 # Op Codes
 
@@ -42,12 +44,17 @@ Received payloads that do not match this format are ignored.
   }
 }
 ```
-- `guild_id`: the ID of the guild this `voice_update` is for.
-- `session_id`: voice state session ID received from a discord [`VOICE_STATE_UPDATE`](https://discord.com/developers/docs/topics/gateway#voice-state-update) event.
-- `token`: voice connection token received from a discord [`VOICE_SERVER_UPDATE`](https://discord.com/developers/docs/topics/gateway#voice-server-update) event.
-- `endpoint`: voice server endpoint from a discord [`VOICE_SERVER_UPDATE`](https://discord.com/developers/docs/topics/gateway#voice-server-update) event.
 
-<sub>the `endpoint` key can be null when discord is 'awaiting endpoint', swish accommodates for clients sending a null `endpoint` by ignoring the `voice_update`.</sub> 
+- `guild_id`: the id of the guild player this `voice_update` is for.
+- `session_id`: voice state session id received from a
+  discord [`VOICE_STATE_UPDATE`](https://discord.com/developers/docs/topics/gateway#voice-state-update) event.
+- `token`: voice connection token received from a
+  discord [`VOICE_SERVER_UPDATE`](https://discord.com/developers/docs/topics/gateway#voice-server-update) event.
+- `endpoint`: voice server endpoint from a
+  discord [`VOICE_SERVER_UPDATE`](https://discord.com/developers/docs/topics/gateway#voice-server-update) event.
+
+<sub>the `endpoint` key can be null when discord is 'awaiting endpoint', swish accommodates for clients sending a
+null `endpoint` by ignoring the `voice_update`.</sub>
 
 ## destroy
 
@@ -59,6 +66,8 @@ Received payloads that do not match this format are ignored.
   }
 }
 ```
+
+- `guild_id`: The id of the guild player you want to destroy.
 
 ## play
 
@@ -75,6 +84,12 @@ Received payloads that do not match this format are ignored.
 }
 ```
 
+- `guild_id`: The id of the guild player you want to play a track on.
+- `track_id`: The id of the track you want to play.
+- (optional) `start_time`: The time (in milliseconds) to start playing the given track at.
+- (optional) `end_time`: The time (in milliseconds) to stop playing the given track at.
+- (optional) `replace`: Whether this track should replace the current track or not.
+
 ## stop
 
 ```json
@@ -86,6 +101,8 @@ Received payloads that do not match this format are ignored.
 }
 ```
 
+- `guild_id`: The id of the guild player you want to stop playing a track on.
+
 ## set_pause_state
 
 ```json
@@ -94,10 +111,12 @@ Received payloads that do not match this format are ignored.
   "d": {
     "guild_id": "490948346773635102",
     "state": true
-    // true = pause, false = resume.
   }
 }
 ```
+
+- `guild_id`: The id of the guild player you want to set the pause state for.
+- `state`: Whether the player should be paused or not, true for paused, false for not-paused.
 
 ## set_position
 
@@ -107,10 +126,12 @@ Received payloads that do not match this format are ignored.
   "d": {
     "guild_id": "490948346773635102",
     "position": 1000
-    // milliseconds, 1 second = 1000 milliseconds.
   }
 }
 ```
+
+- `guild_id`: The id of the guild player you want to set the position in the current track for.
+- `position`: The position (in milliseconds) to set the current track to.
 
 ## set_filter
 
@@ -118,12 +139,62 @@ Received payloads that do not match this format are ignored.
 
 ## event
 
+### track_start
+
 ```json
 {
   "op": "event",
   "d": {
     "guild_id": "490948346773635102",
-    "type": ""
+    "type": "track_start"
+  }
+}
+```
+
+### track_end
+
+```json
+{
+  "op": "event",
+  "d": {
+    "guild_id": "490948346773635102",
+    "type": "track_end"
+  }
+}
+```
+
+### track_error
+
+```json
+{
+  "op": "event",
+  "d": {
+    "guild_id": "490948346773635102",
+    "type": "track_error"
+  }
+}
+```
+
+### player_update
+
+```json
+{
+  "op": "event",
+  "d": {
+    "guild_id": "490948346773635102",
+    "type": "player_update"
+  }
+}
+```
+
+### player_debug
+
+```json
+{
+  "op": "event",
+  "d": {
+    "guild_id": "490948346773635102",
+    "type": "player_debug"
   }
 }
 ```
