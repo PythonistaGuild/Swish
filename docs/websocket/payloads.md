@@ -1,19 +1,35 @@
-# Payloads
+# WebSocket Payloads
 
-| Op                                  | Description   |
-|:------------------------------------|:--------------|
-| [voice_update](#voice_update)       | do cool stuff |
-| [destroy](#destroy)                 | do cool stuff |
-| [play](#play)                       | do cool stuff |
-| [stop](#stop)                       | do cool stuff |
-| [set_pause_state](#set_pause_state) | do cool stuff |
-| [set_position](#set_position)       | do cool stuff |
-| [set_filter](#set_filter)           | do cool stuff |
-| \***[event](#event)**               | do cool stuff |
+Payloads being sent and received by Swish should be JSON objects and match the following format.
 
-*<sub>Payloads that are sent *from* Swish to clients.</sub>
+```json
+{
+  "op": "",
+  "d": {}
+}
+```
 
-### voice_update
+Received payloads that do not match this format are ignored.
+
+- The `op` key should contain a string value indicating the payload type being sent or received. See [Op Codes](#op-codes) for a list of possible values.
+- The `d` key should be another JSON object containing the payload data. All keys shown in the `d` key are required unless otherwise noted.
+
+# Op Codes
+
+| Op                                  | Description                                                            |
+|:------------------------------------|:-----------------------------------------------------------------------|
+| [voice_update](#voice_update)       | instructs a player to connect to the given discord voice server.       |
+| [destroy](#destroy)                 | destroys a player.                                                     |
+| [play](#play)                       | tells a player to play the given track.                                |
+| [stop](#stop)                       | stops a players current track.                                         |
+| [set_pause_state](#set_pause_state) | sets a players pause state.                                            |
+| [set_position](#set_position)       | sets a players position within its current track.                      |
+| [set_filter](#set_filter)           | sets or updates a players active audio filters.                        |
+| \***[event](#event)**               | an update containing useful information about swish or a player event. |
+
+*<sub>payloads that are sent *from* Swish to clients.</sub>
+
+## voice_update
 
 ```json
 {
@@ -26,8 +42,14 @@
   }
 }
 ```
+- `guild_id`: the ID of the guild this `voice_update` is for.
+- `session_id`: voice state session ID received from a discord [`VOICE_STATE_UPDATE`](https://discord.com/developers/docs/topics/gateway#voice-state-update) event.
+- `token`: voice connection token received from a discord [`VOICE_SERVER_UPDATE`](https://discord.com/developers/docs/topics/gateway#voice-server-update) event.
+- `endpoint`: voice server endpoint from a discord [`VOICE_SERVER_UPDATE`](https://discord.com/developers/docs/topics/gateway#voice-server-update) event.
 
-### destroy
+<sub>the `endpoint` key can be null when discord is 'awaiting endpoint', swish accommodates for clients sending a null `endpoint` by ignoring the `voice_update`.</sub> 
+
+## destroy
 
 ```json
 {
@@ -38,7 +60,7 @@
 }
 ```
 
-### play
+## play
 
 ```json
 {
@@ -53,7 +75,7 @@
 }
 ```
 
-### stop
+## stop
 
 ```json
 {
@@ -64,7 +86,7 @@
 }
 ```
 
-### set_pause_state
+## set_pause_state
 
 ```json
 {
@@ -77,7 +99,7 @@
 }
 ```
 
-### set_position
+## set_position
 
 ```json
 {
@@ -90,18 +112,18 @@
 }
 ```
 
-### set_filter
+## set_filter
 
 <sub>Not implemented lol</sub>
 
-### event
+## event
 
 ```json
 {
   "op": "event",
   "d": {
-    "guild_id": "490948346773635102"
-    // stuff soon
+    "guild_id": "490948346773635102",
+    "type": ""
   }
 }
 ```
