@@ -21,6 +21,7 @@ from __future__ import annotations
 import ipaddress
 import logging
 import random
+import time
 
 from .config import CONFIG
 
@@ -47,22 +48,36 @@ class IpRotator:
     _banned: list[IP] = []
     _current: IP | None = None
 
+    _NS = time.time_ns()
+
     @classmethod
     def rotate(cls) -> str:
 
         if not cls._networks:
             return '0.0.0.0'
 
-        if cls._current:
+        # TODO: Only ban on 429
+        """if cls._current:
             cls._banned.append(cls._current)
-            logger.debug(f'Banned IP: {cls._current}')
+            logger.debug(f'Excluded IP: {cls._current}')"""
 
-        for ip in random.choice(cls._networks):
+        net = random.choice(cls._networks)
+        if net.prefixlen == '128':
+            return '0.0.0.0'
 
+        while True:
+            NSOFFSET = time.time_ns() - cls._NS
+
+            if NSOFFSET > cls._total:
+                cls._NS = time.time_ns()
+                continue
+
+            ip = net[NSOFFSET]
             if ip == cls._current or ip in cls._banned:
                 continue
 
-            logger.info(f'Rotated to new IP: {ip}')
+            # WARNING: Very verbose...
+            # logger.info(f'Rotated to new IP: {ip}')
             cls._current = ip
             break
 
