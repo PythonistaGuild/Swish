@@ -4,7 +4,7 @@ port = 8000
 password = "helloworld!"
 
 [IP]
-blocks = []
+blocks = ["..."]
 
 [SEARCH]
 max_results = 10
