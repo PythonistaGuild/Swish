@@ -5,11 +5,11 @@ Swish does stuff and things, IDK, I don't write about stuff like this.
 ## WebSocket
 
 - [Protocol](websocket/protocol.md)
-    - [Connection](websocket/protocol.md#opening-a-connection)
-    - [Close Codes](websocket/protocol.md#close-codes)
+    - [Opening a connection](websocket/protocol.md#opening-a-connection)
+    - [Close codes](websocket/protocol.md#close-codes)
 - [Payloads](websocket/payloads.md)
-    - [Format](websocket/payloads.md#payload-format)
-    - [Ops](websocket/payloads.md#op-codes)
+    - [Payload format](websocket/payloads.md#payload-format)
+    - [Op codes](websocket/payloads.md#op-codes)
 
 ## Rest API
 

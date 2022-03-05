@@ -70,78 +70,80 @@ class App(aiohttp.web.Application):
 
         logger.info(f'Swish server started on {host}:{port}')
 
+    # websocket handling
+
     async def websocket_handler(self, request: aiohttp.web.Request) -> aiohttp.web.WebSocketResponse:
 
-        # Initialise connection
+        # initialise connection
         logger.info(f'<{request.remote}> - Incoming websocket connection request.')
 
         websocket = aiohttp.web.WebSocketResponse()
         await websocket.prepare(request)
 
         # User-Agent
-        user_agent = request.headers.get('User-Agent')
-
-        if not user_agent:
+        if not (user_agent := request.headers.get('User-Agent')):
             logger.error(f'<{request.remote}> - Websocket connection failed due to missing \'User-Agent\' header.')
             await websocket.close(code=4000, message=b'Missing \'User-Agent\' header.')
             return websocket
 
-        client_name = f'{user_agent} ({request.remote})'
+        client_name = f'<{user_agent} ({request.remote})>'
 
         # User-Id
-        user_id = request.headers.get('User-Id')
-
-        if not user_id:
-            logger.error(f'<{client_name}> - Websocket connection failed due to missing \'User-Id\' header.')
+        if not (user_id := request.headers.get('User-Id')):
+            logger.error(f'{client_name} - Websocket connection failed due to missing \'User-Id\' header.')
             await websocket.close(code=4000, message=b'Missing \'User-Id\' header.')
             return websocket
 
         # Authorization
+        password = CONFIG['SERVER']['password']
         authorization = request.headers.get('Authorization')
 
-        if CONFIG['SERVER']['password'] != authorization:
-            logger.error(f'<{client_name}> - Websocket connection failed due to mismatched \'Authorization\' header: {authorization}')
+        if password != authorization:
+            logger.error(f'{client_name} - Websocket connection failed due to mismatched \'Authorization\' header: {authorization}')
             await websocket.close(code=4001, message=b'Authorization failed.')
             return websocket
 
-        # Finalise connection
+        # finalise connection
         websocket['user_agent'] = user_agent
         websocket['client_name'] = client_name
         websocket['user_id'] = user_id
+        websocket['app'] = self
         websocket['players'] = {}
 
-        logger.info(f'<{client_name}> - Websocket connection established.')
+        logger.info(f'{client_name} - Websocket connection established.')
 
-        # Handle incoming messages
+        # handle incoming messages
         async for message in websocket:  # type: aiohttp.WSMessage
 
             try:
                 payload = message.json()
             except Exception:
-                logger.error(f'<{client_name}> - Received payload with invalid JSON format.\nPayload: {message.data}')
+                logger.error(f'{client_name} - Received payload with invalid JSON format.\nPayload: {message.data}')
                 continue
 
             if 'op' not in payload:
-                logger.error(f'<{client_name}> - Received payload with missing \'op\' key.\nPayload: {payload}')
+                logger.error(f'{client_name} - Received payload with missing \'op\' key.\nPayload: {payload}')
                 continue
             if 'd' not in payload:
-                logger.error(f'<{client_name}> - Received payload with missing \'d\' key.\nPayload: {payload}')
+                logger.error(f'{client_name} - Received payload with missing \'d\' key.\nPayload: {payload}')
                 continue
 
+            # payloads that don't need a player should be handled here.
+
             if not (guild_id := payload['d'].get('guild_id', None)):
-                logger.error(f'<{client_name}> - Received payload with missing \'guild_id\' data key. Payload: {payload}')
+                logger.error(f'{client_name} - Received payload with missing \'guild_id\' data key. Payload: {payload}')
                 continue
 
             if not (player := websocket['players'].get(guild_id)):  # type: Player | None
-                player = Player(self, websocket, guild_id, user_id)
+                player = Player(websocket, guild_id)
                 websocket['players'][guild_id] = player
 
             await player.handle_payload(payload)
 
-        logger.info(f'<{client_name}> - Websocket connection closed.')
+        logger.info(f'{client_name} - Websocket connection closed.')
         return websocket
 
-    # Rest handlers
+    # search handling
 
     @staticmethod
     def _encode_track_info(info: dict[str, Any], /) -> str:
@@ -210,7 +212,7 @@ class App(aiohttp.web.Application):
                 'length':     int(entry.get('duration', 0) * 1000),
                 'author':     entry.get('uploader', 'Unknown'),
                 'author_id':  entry.get('channel_id', None),
-                'thumbnail':  entry.get('thumbnail', [None])[0],
+                'thumbnail':  entry.get('thumbnails', [None])[0],
                 'is_live':    entry.get('live_status', False),
             }
             tracks.append(

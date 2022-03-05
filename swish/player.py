@@ -40,24 +40,19 @@ class Player:
 
     def __init__(
         self,
-        app: App,
         websocket: aiohttp.web.WebSocketResponse,
         guild_id: str,
-        user_id: str
     ) -> None:
 
-        self._app: App = app
+        self._app: App = websocket['app']
         self._websocket: aiohttp.web.WebSocketResponse = websocket
         self._guild_id: str = guild_id
-        self._user_id: str = user_id
 
         self._connector: _native_voice.VoiceConnector = _native_voice.VoiceConnector()
-        self._connector.user_id = int(user_id)
+        self._connector.user_id = int(websocket['user_id'])
 
         self._connection: _native_voice.VoiceConnection | None = None
         self._runner: asyncio.Task[None] | None = None
-
-        self._endpoint: str | None = None
 
         self._OP_HANDLERS: dict[str, Callable[[dict[str, Any]], Awaitable[None]]] = {
             'voice_update':    self._voice_update,
@@ -70,7 +65,7 @@ class Player:
             'debug':           self._debug,
         }
 
-        self._LOG_PREFIX: str = f'<{self._websocket["client_name"]}> - Player \'{self._guild_id}\''
+        self._LOG_PREFIX: str = f'{self._websocket["client_name"]} - Player \'{self._guild_id}\''
 
         self._NO_CONNECTION_MESSAGE: Callable[[str], str] = (
             lambda op: f'{self._LOG_PREFIX} attempted \'{op}\' op while internal connection is down.'
@@ -79,7 +74,7 @@ class Player:
             lambda op, key: f'{self._LOG_PREFIX} received \'{op}\' op with missing \'{key}\' key.'
         )
 
-    # websocket op handlers
+    # websocket
 
     async def handle_payload(self, payload: dict[str, Any]) -> None:
 
@@ -92,101 +87,8 @@ class Player:
         logger.debug(f'{self._LOG_PREFIX} received payload with \'{op}\' op.\nPayload: {payload}')
         await handler(payload['d'])
 
-    async def _voice_update(self, data: dict[str, Any]) -> None:
-
-        if not (session_id := data.get('session_id')):
-            logger.error(self._MISSING_KEY_MESSAGE('voice_update', 'session_id'))
-            return
-        if not (token := data.get('token')):
-            logger.error(self._MISSING_KEY_MESSAGE('voice_update', 'token'))
-            return
-        if not (endpoint := data.get('endpoint')):
-            logger.error(self._MISSING_KEY_MESSAGE('voice_update', 'endpoint'))
-            return
-
-        self._connector.session_id = session_id
-
-        endpoint, _, _ = endpoint.rpartition(':')
-        endpoint = endpoint.removeprefix('wss://')
-
-        self._connector.update_socket(
-            token,
-            data['guild_id'],
-            endpoint
-        )
-        await self._connect()
-        logger.info(f'{self._LOG_PREFIX} connected to internal voice server \'{endpoint}\'.')
-
-    async def _destroy(self, _: dict[str, Any]) -> None:
-
-        await self._disconnect()
-        logger.info(f'{self._LOG_PREFIX} has been disconnected.')
-
-    async def _play(self, data: dict[str, Any]) -> None:
-
-        if not self._connection:
-            logger.error(self._NO_CONNECTION_MESSAGE('play'))
-            return
-
-        if not (track_id := data.get('track_id')):
-            logger.error(self._MISSING_KEY_MESSAGE('play', 'track_id'))
-            return
-
-        # TODO: handle start_time
-        # TODO: handle end_time
-        # TODO: handle replace
-
-        track_info = self._app._decode_track_id(track_id)
-        url = await self._app._get_playback_url(track_info['url'])
-
-        self._connection.play(url)
-        logger.info(f'{self._LOG_PREFIX} started playing track \'{track_info["title"]}\' by \'{track_info["author"]}\'.')
-
-    async def _stop(self, _: dict[str, Any]) -> None:
-
-        if not self._connection:
-            logger.error(self._NO_CONNECTION_MESSAGE('stop'))
-            return
-        if not self.is_playing():
-            logger.error(f'{self._LOG_PREFIX} attempted \'stop\' op while no tracks are playing.')
-            return
-
-        self._connection.stop()
-        logger.info(f'{self._LOG_PREFIX} stopped the current track.')
-
-    async def _set_pause_state(self, data: dict[str, Any]) -> None:
-
-        if not self._connection:
-            logger.error(self._NO_CONNECTION_MESSAGE('set_pause_state'))
-            return
-        if not (state := data.get('state')):
-            logger.error(self._MISSING_KEY_MESSAGE('set_pause_state', 'state'))
-            return
-
-        self._connection.pause() if state else self._connection.resume()
-        logger.info(f'{self._LOG_PREFIX} set its paused state to \'{state}\'.')
-
-    async def _set_position(self, data: dict[str, Any]) -> None:
-
-        if not self._connection:
-            logger.error(self._NO_CONNECTION_MESSAGE('set_position'))
-            return
-        if not self.is_playing():
-            logger.error(f'{self._LOG_PREFIX} attempted \'set_position\' op while no tracks are playing.')
-            return
-
-        if not (position := data.get('position')):
-            logger.error(self._MISSING_KEY_MESSAGE('set_position', 'position'))
-            return
-
-        # TODO: implement
-        logger.info(f'{self._LOG_PREFIX} set its position to \'{position}\'.')
-
-    async def _set_filter(self, _: dict[str, Any]) -> None:
-        logger.error(f'{self._LOG_PREFIX} received \'set_filter\' op which is not yet implemented.')
-
-    async def _debug(self, _: dict[str, Any]) -> None:
-        print(self._debug_info())
+    async def send_payload(self, op: str, data: dict[str, Any]) -> None:
+        await self._websocket.send_json({"op": op, "d": data})
 
     # internal connection handlers
 
@@ -198,8 +100,6 @@ class Player:
         if self._runner is not None:
             self._runner.cancel()
         self._runner = loop.create_task(self._reconnect_handler())
-
-        self._websocket['players'][self._guild_id] = self
 
     async def _reconnect_handler(self) -> None:
 
@@ -242,15 +142,109 @@ class Player:
         self._connection.disconnect()
         self._connection = None
 
+    # op handlers
+
+    async def _voice_update(self, data: dict[str, Any]) -> None:
+
+        if not (session_id := data.get('session_id')):
+            logger.error(self._MISSING_KEY_MESSAGE('voice_update', 'session_id'))
+            return
+        if not (token := data.get('token')):
+            logger.error(self._MISSING_KEY_MESSAGE('voice_update', 'token'))
+            return
+        if not (endpoint := data.get('endpoint')):
+            logger.error(self._MISSING_KEY_MESSAGE('voice_update', 'endpoint'))
+            return
+
+        self._connector.session_id = session_id
+
+        endpoint, _, _ = endpoint.rpartition(':')
+        endpoint = endpoint.removeprefix('wss://')
+
+        self._connector.update_socket(
+            token,
+            data['guild_id'],
+            endpoint
+        )
+        await self._connect()
+        logger.info(f'{self._LOG_PREFIX} connected to internal voice server \'{endpoint}\'.')
+
+    async def _destroy(self, _: dict[str, Any]) -> None:
+
+        await self._disconnect()
+        logger.info(f'{self._LOG_PREFIX} has been disconnected.')
+
         del self._websocket['players'][self._guild_id]
 
-    # utility
+    async def _play(self, data: dict[str, Any]) -> None:
 
-    def is_playing(self) -> bool:
-        return self._connection.is_playing() if self._connection else False  # type: ignore
+        if not self._connection:
+            logger.error(self._NO_CONNECTION_MESSAGE('play'))
+            return
 
-    def is_paused(self) -> bool:
-        return self._connection.is_paused() if self._connection else False  # type: ignore
+        if not (track_id := data.get('track_id')):
+            logger.error(self._MISSING_KEY_MESSAGE('play', 'track_id'))
+            return
 
-    def _debug_info(self) -> dict[str, Any]:
-        return self._connection.get_state() if self._connection else {}  # type: ignore
+        # TODO: handle start_time
+        # TODO: handle end_time
+        # TODO: handle replace
+
+        track_info = self._app._decode_track_id(track_id)
+        url = await self._app._get_playback_url(track_info['url'])
+
+        self._connection.play(url)
+        logger.info(f'{self._LOG_PREFIX} started playing track \'{track_info["title"]}\' by \'{track_info["author"]}\'.')
+
+    async def _stop(self, _: dict[str, Any]) -> None:
+
+        if not self._connection:
+            logger.error(self._NO_CONNECTION_MESSAGE('stop'))
+            return
+        if not self._connection.is_playing():
+            logger.error(f'{self._LOG_PREFIX} attempted \'stop\' op while no tracks are playing.')
+            return
+
+        self._connection.stop()
+        logger.info(f'{self._LOG_PREFIX} stopped the current track.')
+
+    async def _set_pause_state(self, data: dict[str, Any]) -> None:
+
+        if not self._connection:
+            logger.error(self._NO_CONNECTION_MESSAGE('set_pause_state'))
+            return
+        if not (state := data.get('state')):
+            logger.error(self._MISSING_KEY_MESSAGE('set_pause_state', 'state'))
+            return
+
+        if state != self._connection.is_paused():
+            self._connection.pause() if state else self._connection.resume()
+
+        logger.info(f'{self._LOG_PREFIX} set its paused state to \'{state}\'.')
+
+    async def _set_position(self, data: dict[str, Any]) -> None:
+
+        if not self._connection:
+            logger.error(self._NO_CONNECTION_MESSAGE('set_position'))
+            return
+        if not self._connection.is_playing():
+            logger.error(f'{self._LOG_PREFIX} attempted \'set_position\' op while no tracks are playing.')
+            return
+
+        if not (position := data.get('position')):
+            logger.error(self._MISSING_KEY_MESSAGE('set_position', 'position'))
+            return
+
+        # TODO: implement
+        logger.info(f'{self._LOG_PREFIX} set its position to \'{position}\'.')
+
+    async def _set_filter(self, _: dict[str, Any]) -> None:
+        logger.error(f'{self._LOG_PREFIX} received \'set_filter\' op which is not yet implemented.')
+
+    async def _debug(self, _: dict[str, Any]) -> None:
+
+        if not self._connection:
+            logger.error(self._NO_CONNECTION_MESSAGE('debug'))
+            return
+
+        print(self._connection.get_state())
