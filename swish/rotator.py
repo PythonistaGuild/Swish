@@ -62,7 +62,7 @@ class IpRotator:
             logger.debug(f'Excluded IP: {cls._current}')"""
 
         net = random.choice(cls._networks)
-        if net.prefixlen == '128':
+        if net.prefixlen == 128:
             return '0.0.0.0'
 
         while True:
