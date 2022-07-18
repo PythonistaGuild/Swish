@@ -1,6 +1,6 @@
 """Swish. A standalone audio player and server for bots on Discord.
 
-Copyright (C) 2022  PythonistaGuild <https://github.com/PythonistaGuild>
+Copyright (C) 2022 PythonistaGuild <https://github.com/PythonistaGuild>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by

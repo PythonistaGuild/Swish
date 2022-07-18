@@ -1,6 +1,6 @@
 """Swish. A standalone audio player and server for bots on Discord.
 
-Copyright (C) 2022  PythonistaGuild <https://github.com/PythonistaGuild>
+Copyright (C) 2022 PythonistaGuild <https://github.com/PythonistaGuild>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by
@@ -88,7 +88,7 @@ class Player:
         await handler(payload['d'])
 
     async def send_payload(self, op: str, data: dict[str, Any]) -> None:
-        await self._websocket.send_json({"op": op, "d": data})
+        await self._websocket.send_json({'op': op, "d": data})
 
     # internal connection handlers
 
