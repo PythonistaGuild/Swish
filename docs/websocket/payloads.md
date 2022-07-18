@@ -1,6 +1,6 @@
 # Payload Format
 
-Payloads being sent and received by Swish should be JSON objects and match the following format.
+Payloads being sent and received by Swish should be JSON objects that match the following format.
 
 ```json
 {
@@ -11,27 +11,23 @@ Payloads being sent and received by Swish should be JSON objects and match the f
 
 Received payloads that do not match this format are ignored.
 
-- The `op` key should contain a string value indicating the payload type being sent or received.
-  See [Op Codes](#op-codes) for a list of possible values.
-- The `d` key should be another JSON object containing the payload data. All fields shown in the `d` key below are
-  required unless otherwise noted.
+- The `op` field should contain a string value indicating the payload type being sent or received. See [Op Codes](#op-codes) for a list of possible values.
+- The `d` field should contain another JSON object containing the payload data.
 
 # Op Codes
 
-| Op                                  | Description                                                            |
-|:------------------------------------|:-----------------------------------------------------------------------|
-| [voice_update](#voice_update)       | instructs a player to connect to the given discord voice server.       |
-| [destroy](#destroy)                 | destroys a player.                                                     |
-| [play](#play)                       | tells a player to play the given track.                                |
-| [stop](#stop)                       | stops a players current track.                                         |
-| [set_pause_state](#set_pause_state) | sets a players pause state.                                            |
-| [set_position](#set_position)       | sets a players position within its current track.                      |
-| [set_filter](#set_filter)           | sets or updates a players active audio filters.                        |
-| \***[event](#event)**               | an update containing useful information about swish or a player event. |
+| Op                                  | Description |
+|:------------------------------------|:------------|
+| [voice_update](#voice_update)       | TBD         |
+| [destroy](#destroy)                 | TBD         |
+| [play](#play)                       | TBD         |
+| [stop](#stop)                       | TBD         |
+| [set_pause_state](#set_pause_state) | TBD         |
+| [set_position](#set_position)       | TBD         |
+| [set_filter](#set_filter)           | TBD         |
+| \***[event](#event)**               | TBD         |
 
 *<sub>payloads that are sent *from* Swish to clients.</sub>
-
-**<sub>`player` is just another name for a guild.</sub>
 
 ## voice_update
 
@@ -55,10 +51,7 @@ Received payloads that do not match this format are ignored.
 - `endpoint`: voice server endpoint received from a
   discord [`VOICE_SERVER_UPDATE`](https://discord.com/developers/docs/topics/gateway#voice-server-update) event.
 
-<sub>the `endpoint` field of
-a [`VOICE_SERVER_UPDATE`](https://discord.com/developers/docs/topics/gateway#voice-server-update) can sometimes be null
-when the voice server is unavailable. Make sure you check for this before sending a `voice_update`
-request.</sub>
+<sub>the `endpoint` field of a [`VOICE_SERVER_UPDATE`](https://discord.com/developers/docs/topics/gateway#voice-server-update) event can sometimes be null when the voice server is unavailable. Make sure you check for this before sending a `voice_update` payload type.</sub>
 
 ## destroy
 
