@@ -13,7 +13,7 @@ from discord.ext import commands
 CONFIG: dict[str, Any] = toml.load('swish.toml')  # type: ignore
 
 
-class CD(commands.Bot):
+class Bot(commands.Bot):
 
     def __init__(self) -> None:
         super().__init__(
@@ -71,10 +71,10 @@ class CD(commands.Bot):
 
 class Player(discord.VoiceProtocol):
 
-    def __init__(self, client: CD, channel: discord.VoiceChannel) -> None:
+    def __init__(self, client: Bot, channel: discord.VoiceChannel) -> None:
         super().__init__(client, channel)
 
-        self.bot: CD = client
+        self.bot: Bot = client
         self.voice_channel: discord.VoiceChannel = channel
 
         self._voice_server_update_data: discord.types.voice.VoiceServerUpdate | None = None
@@ -131,8 +131,8 @@ class Player(discord.VoiceProtocol):
 
 class Music(commands.Cog):
 
-    def __init__(self, bot: CD) -> None:
-        self.bot: CD = bot
+    def __init__(self, bot: Bot) -> None:
+        self.bot: Bot = bot
 
     @commands.command()
     async def play(self, ctx: commands.Context, *, query: str) -> None:
@@ -152,9 +152,17 @@ class Music(commands.Cog):
             )
 
 
-cd = CD()
+bot: Bot = Bot()
 
-cd.load_extension('jishaku')
-cd.add_cog(Music(cd))
 
-cd.run('')
+async def main() -> None:
+
+    async with bot:
+
+        await bot.load_extension('jishaku')
+        await bot.add_cog(Music(bot))
+
+        await bot.start(token="")
+
+
+asyncio.run(main())
