@@ -209,7 +209,7 @@ class App(aiohttp.web.Application):
                 'title':      entry['title'],
                 'identifier': entry['id'],
                 'url':        entry['url'],
-                'length':     int(entry.get('duration', 0) * 1000),
+                'length':     int(entry.get('duration') or 0 * 1000),
                 'author':     entry.get('uploader', 'Unknown'),
                 'author_id':  entry.get('channel_id', None),
                 'thumbnail':  entry.get('thumbnails', [None])[0],
