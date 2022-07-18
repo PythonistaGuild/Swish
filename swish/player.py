@@ -20,13 +20,15 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from collections.abc import Awaitable, Callable
+from collections.abc import Callable
 from typing import Any, TYPE_CHECKING
 
 import aiohttp
 import aiohttp.web
 from discord.backoff import ExponentialBackoff
-from discord.ext.native_voice import _native_voice
+from discord.ext.native_voice import _native_voice  # type: ignore
+
+from .types.payloads import *
 
 
 if TYPE_CHECKING:
@@ -54,7 +56,7 @@ class Player:
         self._connection: _native_voice.VoiceConnection | None = None
         self._runner: asyncio.Task[None] | None = None
 
-        self._OP_HANDLERS: dict[str, Callable[[dict[str, Any]], Awaitable[None]]] = {
+        self._PAYLOAD_HANDLERS: PayloadHandlers = {
             'voice_update':    self._voice_update,
             'destroy':         self._destroy,
             'play':            self._play,
@@ -62,7 +64,6 @@ class Player:
             'set_pause_state': self._set_pause_state,
             'set_position':    self._set_position,
             'set_filter':      self._set_filter,
-            'debug':           self._debug,
         }
 
         self._LOG_PREFIX: str = f'{self._websocket["client_name"]} - Player \'{self._guild_id}\''
@@ -74,23 +75,23 @@ class Player:
             lambda op, key: f'{self._LOG_PREFIX} received \'{op}\' op with missing \'{key}\' key.'
         )
 
-    # websocket
+    # websocket handlers
 
-    async def handle_payload(self, payload: dict[str, Any]) -> None:
+    async def handle_payload(self, payload: ReceivedPayload) -> None:
 
         op = payload['op']
 
-        if not (handler := self._OP_HANDLERS.get(op)):
+        if op not in self._PAYLOAD_HANDLERS:
             logger.error(f'{self._LOG_PREFIX} received payload with unknown \'op\' key.\nPayload: {payload}')
             return
 
         logger.debug(f'{self._LOG_PREFIX} received payload with \'{op}\' op.\nPayload: {payload}')
-        await handler(payload['d'])
+        await self._PAYLOAD_HANDLERS[op](payload['d'])
 
-    async def send_payload(self, op: str, data: dict[str, Any]) -> None:
+    async def send_payload(self, op: SentPayloadOp, data: Any) -> None:
         await self._websocket.send_json({'op': op, "d": data})
 
-    # internal connection handlers
+    # connection handlers
 
     async def _connect(self) -> None:
 
@@ -142,9 +143,9 @@ class Player:
         self._connection.disconnect()
         self._connection = None
 
-    # op handlers
+    # payload handlers
 
-    async def _voice_update(self, data: dict[str, Any]) -> None:
+    async def _voice_update(self, data: VoiceUpdateData) -> None:
 
         if not (session_id := data.get('session_id')):
             logger.error(self._MISSING_KEY_MESSAGE('voice_update', 'session_id'))
@@ -169,14 +170,14 @@ class Player:
         await self._connect()
         logger.info(f'{self._LOG_PREFIX} connected to internal voice server \'{endpoint}\'.')
 
-    async def _destroy(self, _: dict[str, Any]) -> None:
+    async def _destroy(self) -> None:
 
         await self._disconnect()
         logger.info(f'{self._LOG_PREFIX} has been disconnected.')
 
         del self._websocket['players'][self._guild_id]
 
-    async def _play(self, data: dict[str, Any]) -> None:
+    async def _play(self, data: PlayData) -> None:
 
         if not self._connection:
             logger.error(self._NO_CONNECTION_MESSAGE('play'))
@@ -196,7 +197,7 @@ class Player:
         self._connection.play(url)
         logger.info(f'{self._LOG_PREFIX} started playing track \'{track_info["title"]}\' by \'{track_info["author"]}\'.')
 
-    async def _stop(self, _: dict[str, Any]) -> None:
+    async def _stop(self) -> None:
 
         if not self._connection:
             logger.error(self._NO_CONNECTION_MESSAGE('stop'))
@@ -208,7 +209,7 @@ class Player:
         self._connection.stop()
         logger.info(f'{self._LOG_PREFIX} stopped the current track.')
 
-    async def _set_pause_state(self, data: dict[str, Any]) -> None:
+    async def _set_pause_state(self, data: SetPauseStateData) -> None:
 
         if not self._connection:
             logger.error(self._NO_CONNECTION_MESSAGE('set_pause_state'))
@@ -222,7 +223,7 @@ class Player:
 
         logger.info(f'{self._LOG_PREFIX} set its paused state to \'{state}\'.')
 
-    async def _set_position(self, data: dict[str, Any]) -> None:
+    async def _set_position(self, data: SetPositionData) -> None:
 
         if not self._connection:
             logger.error(self._NO_CONNECTION_MESSAGE('set_position'))
@@ -238,13 +239,5 @@ class Player:
         # TODO: implement
         logger.info(f'{self._LOG_PREFIX} set its position to \'{position}\'.')
 
-    async def _set_filter(self, _: dict[str, Any]) -> None:
+    async def _set_filter(self, data: SetFilterData) -> None:
         logger.error(f'{self._LOG_PREFIX} received \'set_filter\' op which is not yet implemented.')
-
-    async def _debug(self, _: dict[str, Any]) -> None:
-
-        if not self._connection:
-            logger.error(self._NO_CONNECTION_MESSAGE('debug'))
-            return
-
-        print(self._connection.get_state())

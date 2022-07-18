@@ -29,6 +29,13 @@ from .config import CONFIG
 
 class ColourFormatter(logging.Formatter):
 
+    COLOURS: dict[int, str] = {
+        logging.DEBUG:   colorama.Fore.MAGENTA,
+        logging.INFO:    colorama.Fore.GREEN,
+        logging.WARNING: colorama.Fore.YELLOW,
+        logging.ERROR:   colorama.Fore.RED,
+    }
+
     def __init__(self, enabled: bool) -> None:
 
         self.enabled: bool = enabled
@@ -45,13 +52,6 @@ class ColourFormatter(logging.Formatter):
             fmt=fmt,
             datefmt='%I:%M:%S %Y/%m/%d'
         )
-
-        self.COLOURS: dict[int, str] = {
-            logging.DEBUG:   colorama.Fore.MAGENTA,
-            logging.INFO:    colorama.Fore.GREEN,
-            logging.WARNING: colorama.Fore.YELLOW,
-            logging.ERROR:   colorama.Fore.RED,
-        }
 
     def format(self, record: logging.LogRecord) -> str:
         record.colour = self.COLOURS[record.levelno]  # type: ignore

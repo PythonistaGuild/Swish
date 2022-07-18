@@ -34,6 +34,7 @@ import yt_dlp
 from .config import CONFIG
 from .rotator import IpRotator
 from .player import Player
+from .types.payloads import *
 
 
 logger: logging.Logger = logging.getLogger('swish.app')
@@ -113,11 +114,13 @@ class App(aiohttp.web.Application):
         logger.info(f'{client_name} - Websocket connection established.')
 
         # handle incoming messages
-        async for message in websocket:  # type: aiohttp.WSMessage
+
+        message: aiohttp.WSMessage
+        async for message in websocket:
 
             try:
-                payload = message.json()
-            except Exception:
+                payload: ReceivedPayload = message.json()
+            except json.JSONDecodeError:
                 logger.error(f'{client_name} - Received payload with invalid JSON format.\nPayload: {message.data}')
                 continue
 
@@ -134,7 +137,7 @@ class App(aiohttp.web.Application):
                 logger.error(f'{client_name} - Received payload with missing \'guild_id\' data key. Payload: {payload}')
                 continue
 
-            if not (player := websocket['players'].get(guild_id)):  # type: Player | None
+            if not (player := websocket['players'].get(guild_id)):
                 player = Player(websocket, guild_id)
                 websocket['players'][guild_id] = player
 
@@ -184,6 +187,7 @@ class App(aiohttp.web.Application):
 
         with yt_dlp.YoutubeDL(self._SEARCH_OPTIONS) as YTDL:
             with contextlib.redirect_stdout(open(os.devnull, 'w')):
+                assert self._loop is not None
                 _search: Any = await self._loop.run_in_executor(
                     None,
                     functools.partial(YTDL.extract_info, query, download=False)
