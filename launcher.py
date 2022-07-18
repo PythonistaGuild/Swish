@@ -26,7 +26,7 @@ from swish.logging import setup_logging
 setup_logging()
 
 
-BANNER = """
+banner: str = """
 ######################################################
 ##   (`-').->     .->     _      (`-').-> (`-').->  ##
 ##   ( OO)_   (`(`-')/`) (_)     ( OO)_   (OO )__   ##
@@ -39,11 +39,11 @@ BANNER = """
 ## VERSION: 0.0.1alpha0 - BUILD: N/A                ##
 ###################################################### 
 """
-print(BANNER)
+print(banner)
 
 
 from swish.app import App
-app = App()
+app: App = App()
 
 
 try:
