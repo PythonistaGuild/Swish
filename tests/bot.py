@@ -10,7 +10,7 @@ import toml
 from discord.ext import commands
 
 
-CONFIG: dict[str, Any] = toml.load('swish.toml')  # type: ignore
+CONFIG: dict[str, Any] = toml.load('../swish.toml')  # type: ignore
 
 
 class Bot(commands.Bot):
