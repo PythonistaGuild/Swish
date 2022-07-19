@@ -1,7 +1,7 @@
 [SERVER]
-host = "127.0.0.1"
+host = '127.0.0.1'
 port = 8000
-password = "helloworld!"
+password = 'helloworld!'
 
 [IP]
 blocks = []
@@ -10,11 +10,11 @@ blocks = []
 max_results = 10
 
 [LOGGING]
-path = "logs/"
+path = 'logs/'
 backup_count = 5
 max_bytes = 5242880  # 5mb
 
 [LOGGING.LEVEL]
-swish = "DEBUG"
-discord = "NOTSET"
-aiohttp = "NOTSET"
+swish = 'DEBUG'
+discord = 'NOTSET'
+aiohttp = 'NOTSET'

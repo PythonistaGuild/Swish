@@ -27,20 +27,34 @@ logger: logging.Logger = logging.getLogger('swish.config')
 
 
 try:
-    CONFIG: dict[str, Any] = toml.load('swish.toml')  # type: ignore
+    config = toml.load('swish.toml')
     logger.info('Successfully loaded swish.toml configuration.')
 except Exception as e:
-    logger.error(f'Exception: {e} when reading swish.toml. Default config values will be used instead.')
-
-    CONFIG: dict[str, Any] = {
-        'SERVER': {'host': 'localhost', 'port': 3555, 'password': 'helloworld!'},
-        'IP': {'blocks': []},
-        'LOGGING': {'path': 'logs/', 'backup_count': 5, 'max_bytes': 5242880,
-                    'LEVEL': {'swish': 'DEBUG', 'discord': 'NOTSET', 'aiohttp': 'NOTSET'}}
+    config: dict[str, Any] = {
+        'SERVER':  {
+            'host':     '127.0.0.1',
+            'port':     8000,
+            'password': 'helloworld!'
+        },
+        'IP':      {
+            'blocks': []
+        },
+        "SEARCH":  {
+            "max_results": 10
+        },
+        'LOGGING': {
+            'path':         'logs/',
+            'backup_count': 5,
+            'max_bytes':    5242880,
+            'LEVEL':        {
+                'swish':   'DEBUG',
+                'discord': 'NOTSET',
+                'aiohttp': 'NOTSET'
+            }
+        }
 
     }
+    logger.error(f'Exception: {e} while loading swish.toml, using default configuration.')
 
-    with open('swish.toml', 'w') as fp:
-        toml.dump(CONFIG, fp)
 
-    logger.info('Created default swish.toml, as an error occurred loading one.')
+CONFIG = config
