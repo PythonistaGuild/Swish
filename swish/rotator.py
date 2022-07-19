@@ -48,7 +48,7 @@ class IpRotator:
     _banned: list[IP] = []
     _current: IP | None = None
 
-    _NS = time.time_ns()
+    _ns = time.time_ns()
 
     @classmethod
     def rotate(cls) -> str:
@@ -66,10 +66,10 @@ class IpRotator:
             return '0.0.0.0'
 
         while True:
-            NSOFFSET = time.time_ns() - cls._NS
+            NSOFFSET = time.time_ns() - cls._ns
 
             if NSOFFSET > cls._total:
-                cls._NS = time.time_ns()
+                cls._ns = time.time_ns()
                 continue
 
             ip = net[NSOFFSET]
