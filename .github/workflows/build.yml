@@ -25,11 +25,7 @@ jobs:
           sudo apt update
           sudo apt install -y libopus-dev
           python -m ensurepip
-          pip install setuptools
-          pip install -r native/requirements-dev.txt
-          pip install -r native/requirements.txt
-          pip install -r requirements-dev.txt
-          pip install -r requirements.txt
+          pip install .[build]
 
       - name: Build swish
         run: |
@@ -52,11 +48,7 @@ jobs:
       - name: Install Deps
         run: |
           python -m ensurepip
-          pip install setuptools
-          pip install -r native/requirements-dev.txt
-          pip install -r native/requirements.txt
-          pip install -r requirements-dev.txt
-          pip install -r requirements.txt
+          pip install .[build]
 
       - name: Build swish
         run: |
@@ -79,11 +71,7 @@ jobs:
       - name: Install Deps
         run: |
           python -m ensurepip
-          pip install setuptools
-          pip install -r native/requirements-dev.txt
-          pip install -r native/requirements.txt
-          pip install -r requirements-dev.txt
-          pip install -r requirements.txt
+          pip install .[build]
 
       - name: Build swish
         run: |

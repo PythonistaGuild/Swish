@@ -398,7 +398,7 @@ impl Debugger {
 }
 
 #[pymodule]
-fn _native_voice(py: Python, m: &PyModule) -> PyResult<()> {
+fn native_voice(py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<VoiceConnection>()?;
     m.add_class::<VoiceConnector>()?;
     m.add_class::<Debugger>()?;

@@ -1,20 +1,13 @@
-# general
 .idea/
-logs/
+.eggs/
 
-*.pyc
-
-
-# discord-ext-native-voice
-target/
 *.egg-info/
 
-*.pyd
-
-
-# pyinstaller
+logs/
 build/
 dist/
-dist_no_bin/
+target/
+venv/
 
-swish.spec
+*.pyc
+*.spec

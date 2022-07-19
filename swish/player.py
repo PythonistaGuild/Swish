@@ -26,7 +26,7 @@ from typing import Any, TYPE_CHECKING
 import aiohttp
 import aiohttp.web
 from discord.backoff import ExponentialBackoff
-from discord.ext.native_voice import _native_voice  # type: ignore
+from discord.ext.native_voice import native_voice  # type: ignore
 
 from .types.payloads import *
 
@@ -50,10 +50,10 @@ class Player:
         self._websocket: aiohttp.web.WebSocketResponse = websocket
         self._guild_id: str = guild_id
 
-        self._connector: _native_voice.VoiceConnector = _native_voice.VoiceConnector()
+        self._connector: native_voice.VoiceConnector = native_voice.VoiceConnector()
         self._connector.user_id = int(websocket['user_id'])
 
-        self._connection: _native_voice.VoiceConnection | None = None
+        self._connection: native_voice.VoiceConnection | None = None
         self._runner: asyncio.Task[None] | None = None
 
         self._PAYLOAD_HANDLERS: PayloadHandlers = {
@@ -113,15 +113,15 @@ class Player:
                 assert self._connection is not None
                 await self._connection.run(loop)
 
-            except _native_voice.ConnectionClosed:
+            except native_voice.ConnectionClosed:
                 await self._disconnect()
                 return
 
-            except _native_voice.ConnectionError:
+            except native_voice.ConnectionError:
                 await self._disconnect()
                 return
 
-            except _native_voice.ReconnectError:
+            except native_voice.ReconnectError:
 
                 retry = backoff.delay()
                 await asyncio.sleep(retry)

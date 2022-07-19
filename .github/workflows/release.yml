@@ -20,11 +20,7 @@ jobs:
       - name: Install Deps
         run: |
           python -m ensurepip
-          pip install setuptools
-          pip install -r native/requirements-dev.txt
-          pip install -r native/requirements.txt
-          pip install -r requirements-dev.txt
-          pip install -r requirements.txt
+          pip install .[build]
 
       - name: Build swish
         run: |
@@ -37,7 +33,7 @@ jobs:
           file: ./dist/swish.exe
           asset_name: swish-windows_x86-64.exe
           tag: ${{ github.ref }}
-  
+
 
   Ubuntu:
     runs-on: ubuntu-latest
@@ -54,11 +50,7 @@ jobs:
       - name: Install Deps
         run: |
           python -m ensurepip
-          pip install setuptools
-          pip install -r native/requirements-dev.txt
-          pip install -r native/requirements.txt
-          pip install -r requirements-dev.txt
-          pip install -r requirements.txt
+          pip install .[build]
 
       - name: Build swish
         run: |
@@ -88,14 +80,12 @@ jobs:
       - name: Install Deps
         run: |
           python -m ensurepip
-          pip install setuptools
-          pip install -r native/requirements-dev.txt
-          pip install -r native/requirements.txt
-          pip install -r requirements-dev.txt
-          pip install -r requirements.txt
+          pip install .[build]
+
       - name: Build swish
         run: |
           python build.py --no-deps
+
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         with:

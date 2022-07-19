@@ -4,41 +4,40 @@ build-backend = "poetry.core.masonry.api"
 
 
 [tool.poetry]
-name        = "Swish"
-version     = "0.0.1a"
+name = "Swish"
+version = "0.0.1"
 description = ""
-license     = ""
-authors     = []
-readme      = ""
+authors = []
 
 
 [tool.poetry.dependencies]
-python          = "^3.10.0"
-aiohttp         = "^3.7.0"
-colorama        = "^0.4.0"
-toml            = "^0.10.0"
-yt-dlp          = "^2022.2.0"
-"discord.py"    = { git = "git@github.com:Rapptz/discord.py", branch = "master" }
+python              = "^3.10"
+aiohttp             = "~3.8.0"
+colorama            = "~0.4.0"
+toml                = "~0.10.0"
+typing_extensions   = "~4.3.0"
+yt-dlp              = "~2022.7.0"
+
+pyinstaller     = { version = "*", optional = true }
+jishaku         = { version = "*", optional = true }
+"discord.py"    = { git = "https://github.com/Rapptz/discord.py", optional = true }
 
 
-[tool.poetry.dev-dependencies]
-pyinstaller = { version = "*" }
-jishaku     = { version = "*" }
+[tool.poetry.extras]
+build = ["pyinstaller"]
+dev = ["discord.py", "jishaku"]
 
 
 [tool.pyright]
-include                 = ["swish"]
-exclude                 = []
-verboseOutput           = false
-pythonVersion           = "3.10"
-typeCheckingMode        = "strict"
-useLibraryCodeForTypes  = true
-
-reportMissingTypeStubs      = false
-reportPrivateImportUsage    = false
-reportPrivateUsage          = false
-reportUnknownMemberType     = false
-reportFunctionMemberAccess  = false
-reportUnknownArgumentType   = false
-reportImportCycles          = false
-reportConstantRedefinition  = false
+include = [
+    "swish",
+    # "tests"
+]
+pythonVersion = "3.10"
+typeCheckingMode = "strict"
+useLibraryCodeForTypes = true
+reportUnknownMemberType = false
+reportPrivateUsage = false
+reportImportCycles = false
+reportMissingTypeStubs = false
+reportUnknownArgumentType = false
