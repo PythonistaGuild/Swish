@@ -24,6 +24,7 @@ import sys
 if '--no-deps' not in sys.argv:
     from pip._internal.commands import create_command
     create_command('install').main(['.[build]'])
+    create_command('install').main(['./native_voice'])
 
 
 args: list[str] = [
