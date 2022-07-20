@@ -27,6 +27,11 @@ import colorama
 from .config import CONFIG
 
 
+__all__ = (
+    "setup_logging",
+)
+
+
 class ColourFormatter(logging.Formatter):
 
     COLOURS: dict[int, str] = {

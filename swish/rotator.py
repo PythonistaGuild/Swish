@@ -26,7 +26,7 @@ import time
 from .config import CONFIG
 
 
-logger: logging.Logger = logging.getLogger('swish.rotator')
+LOG: logging.Logger = logging.getLogger('swish.rotator')
 
 
 Network = ipaddress.IPv4Network | ipaddress.IPv6Network
@@ -40,10 +40,10 @@ class IpRotator:
 
     if _networks:
         _total: int = sum(network.num_addresses for network in _networks)
-        logger.info(f'IP rotation enabled using {_total} total addresses.')
+        LOG.info(f'IP rotation enabled using {_total} total addresses.')
     else:
         _total: int = 0
-        logger.warning('No IP blocks configured. Increased risk of rate-limiting.')
+        LOG.warning('No IP blocks configured. Increased risk of rate-limiting.')
 
     _banned: list[IP] = []
     _current: IP | None = None
@@ -59,7 +59,7 @@ class IpRotator:
         # TODO: Only ban on 429
         """if cls._current:
             cls._banned.append(cls._current)
-            logger.debug(f'Excluded IP: {cls._current}')"""
+            LOG.debug(f'Excluded IP: {cls._current}')"""
 
         net = random.choice(cls._networks)
         if net.prefixlen == 128:
@@ -77,7 +77,7 @@ class IpRotator:
                 continue
 
             # WARNING: Very verbose...
-            # logger.info(f'Rotated to new IP: {ip}')
+            # LOG.info(f'Rotated to new IP: {ip}')
             cls._current = ip
             break
 

@@ -23,38 +23,49 @@ from typing import Any
 import toml
 
 
-logger: logging.Logger = logging.getLogger('swish.config')
+LOG: logging.Logger = logging.getLogger('swish.config')
 
 
-try:
-    config = toml.load('swish.toml')
-    logger.info('Successfully loaded swish.toml configuration.')
-except Exception as e:
-    config: dict[str, Any] = {
-        'SERVER':  {
-            'host':     '127.0.0.1',
-            'port':     8000,
-            'password': 'helloworld!'
-        },
-        'IP':      {
-            'blocks': []
-        },
-        "SEARCH":  {
-            "max_results": 10
-        },
-        'LOGGING': {
-            'path':         'logs/',
-            'backup_count': 5,
-            'max_bytes':    5242880,
-            'LEVEL':        {
-                'swish':   'DEBUG',
-                'discord': 'NOTSET',
-                'aiohttp': 'NOTSET'
+__all__ = (
+    "setup_config",
+    "CONFIG",
+)
+
+
+def setup_config() -> dict[str, Any]:
+
+    try:
+        config = toml.load('swish.toml')
+        LOG.info('Successfully loaded swish.toml configuration.')
+
+    except (toml.TomlDecodeError, FileNotFoundError, IOError):
+        config: dict[str, Any] = {
+            'SERVER':  {
+                'host':     '127.0.0.1',
+                'port':     8000,
+                'password': 'helloworld!'
+            },
+            'IP':      {
+                'blocks': []
+            },
+            "SEARCH":  {
+                "max_results": 10
+            },
+            'LOGGING': {
+                'path':         'logs/',
+                'backup_count': 5,
+                'max_bytes':    5242880,
+                'LEVEL':        {
+                    'swish':   'DEBUG',
+                    'discord': 'NOTSET',
+                    'aiohttp': 'NOTSET'
+                }
             }
+
         }
+        LOG.error('Could not find or load swish.toml, using default values.')
 
-    }
-    logger.error(f'Exception: {e} while loading swish.toml, using default configuration.')
+    return config
 
 
-CONFIG = config
+CONFIG: dict[str, Any] = setup_config()

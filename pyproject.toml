@@ -17,15 +17,15 @@ colorama            = "~0.4.0"
 toml                = "~0.10.0"
 typing_extensions   = "~4.3.0"
 yt-dlp              = "~2022.7.0"
+"discord.py"    = { git = "https://github.com/Rapptz/discord.py" }
 
 pyinstaller     = { version = "*", optional = true }
 jishaku         = { version = "*", optional = true }
-"discord.py"    = { git = "https://github.com/Rapptz/discord.py", optional = true }
 
 
 [tool.poetry.extras]
 build = ["pyinstaller"]
-dev = ["discord.py", "jishaku"]
+dev = ["jishaku"]
 
 
 [tool.pyright]

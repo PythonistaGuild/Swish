@@ -18,14 +18,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import annotations
 
 
-import asyncio
-loop = asyncio.new_event_loop()
-
-
-from swish.logging import setup_logging
-setup_logging()
-
-
 banner: str = """
 ######################################################
 ##   (`-').->     .->     _      (`-').-> (`-').->  ##
@@ -42,12 +34,20 @@ banner: str = """
 print(banner)
 
 
+import asyncio
+loop: asyncio.AbstractEventLoop = asyncio.new_event_loop()
+
+
+from swish.logging import setup_logging
+setup_logging()
+
+
 from swish.app import App
 app: App = App()
 
 
 try:
-    loop.create_task(app._run_app())
+    loop.create_task(app.run())
     loop.run_forever()
 except KeyboardInterrupt:
     pass
