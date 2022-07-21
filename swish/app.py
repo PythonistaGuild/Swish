@@ -50,6 +50,8 @@ class App(aiohttp.web.Application):
     def __init__(self) -> None:
         super().__init__()
 
+        self._connections: list[aiohttp.web.WebSocketResponse] = []
+
         self.add_routes(
             [
                 aiohttp.web.get('/', self.websocket_handler),
@@ -80,45 +82,40 @@ class App(aiohttp.web.Application):
 
     async def websocket_handler(self, request: aiohttp.web.Request) -> aiohttp.web.WebSocketResponse:
 
-        # initialise connection
         LOG.info(f'<{request.remote}> - Incoming websocket connection request.')
 
         websocket = aiohttp.web.WebSocketResponse()
         await websocket.prepare(request)
 
-        # User-Agent
-        if not (user_agent := request.headers.get('User-Agent')):
+        user_agent: str | None = request.headers.get('User-Agent')
+        if not user_agent:
             LOG.error(f'<{request.remote}> - Websocket connection failed due to missing \'User-Agent\' header.')
             await websocket.close(code=4000, message=b'Missing \'User-Agent\' header.')
             return websocket
 
         client_name = f'<{user_agent} ({request.remote})>'
 
-        # User-Id
-        if not (user_id := request.headers.get('User-Id')):
+        user_id: str | None = request.headers.get('User-Id')
+        if not user_id:
             LOG.error(f'{client_name} - Websocket connection failed due to missing \'User-Id\' header.')
             await websocket.close(code=4000, message=b'Missing \'User-Id\' header.')
             return websocket
 
-        # Authorization
-        password = CONFIG['SERVER']['password']
-        authorization = request.headers.get('Authorization')
-
+        password: str = CONFIG['SERVER']['password']
+        authorization: str | None = request.headers.get('Authorization')
         if password != authorization:
-            LOG.error(f'{client_name} - Websocket connection failed due to mismatched \'Authorization\' header: {authorization}')
+            LOG.error(f'{client_name} - Websocket connection failed due to mismatched \'Authorization\' header.')
             await websocket.close(code=4001, message=b'Authorization failed.')
             return websocket
 
-        # finalise connection
-        websocket['user_agent'] = user_agent
         websocket['client_name'] = client_name
+        websocket['user_agent'] = user_agent
         websocket['user_id'] = user_id
         websocket['app'] = self
         websocket['players'] = {}
+        self._connections.append(websocket)
 
         LOG.info(f'{client_name} - Websocket connection established.')
-
-        # handle incoming messages
 
         message: aiohttp.WSMessage
         async for message in websocket:
@@ -136,19 +133,25 @@ class App(aiohttp.web.Application):
                 LOG.error(f'{client_name} - Received payload with missing \'d\' key.\nPayload: {payload}')
                 continue
 
-            # payloads that don't need a player should be handled here.
+            # op codes that don't require player should be handled here.
+            # TODO: handle debug op
 
-            if not (guild_id := payload['d'].get('guild_id', None)):
+            guild_id: str | None = payload['d'].get('guild_id')
+            if not guild_id:
                 LOG.error(f'{client_name} - Received payload with missing \'guild_id\' data key. Payload: {payload}')
                 continue
 
-            if not (player := websocket['players'].get(guild_id)):
+            player: Player | None = websocket['players'].get(guild_id)
+            if not player:
                 player = Player(websocket, guild_id)
                 websocket['players'][guild_id] = player
 
             await player.handle_payload(payload)
 
         LOG.info(f'{client_name} - Websocket connection closed.')
+
+        # TODO: destroy/disconnect all players
+        self._connections.remove(websocket)
         return websocket
 
     # search handling
