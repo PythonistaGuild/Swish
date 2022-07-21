@@ -41,7 +41,7 @@ LOG: logging.Logger = logging.getLogger('swish.app')
 
 
 __all__ = (
-    "App",
+    'App',
 )
 
 

@@ -27,8 +27,8 @@ LOG: logging.Logger = logging.getLogger('swish.config')
 
 
 __all__ = (
-    "setup_config",
-    "CONFIG",
+    'setup_config',
+    'CONFIG',
 )
 
 
@@ -48,8 +48,8 @@ def setup_config() -> dict[str, Any]:
             'IP':      {
                 'blocks': []
             },
-            "SEARCH":  {
-                "max_results": 10
+            'SEARCH':  {
+                'max_results': 10
             },
             'LOGGING': {
                 'path':         'logs/',

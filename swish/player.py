@@ -89,7 +89,7 @@ class Player:
         await self._PAYLOAD_HANDLERS[op](payload['d'])
 
     async def send_payload(self, op: SentPayloadOp, data: Any) -> None:
-        await self._websocket.send_json({'op': op, "d": data})
+        await self._websocket.send_json({'op': op, 'd': data})
 
     # connection handlers
 

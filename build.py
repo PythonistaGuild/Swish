@@ -35,7 +35,7 @@ args: list[str] = [
     '--onefile',
 ]
 
-if platform != "Linux":
+if platform != 'Linux':
     args.extend(
         (
             '--add-binary',

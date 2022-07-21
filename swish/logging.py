@@ -28,7 +28,7 @@ from .config import CONFIG
 
 
 __all__ = (
-    "setup_logging",
+    'setup_logging',
 )
 
 

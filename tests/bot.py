@@ -162,7 +162,7 @@ async def main() -> None:
         await bot.load_extension('jishaku')
         await bot.add_cog(Music(bot))
 
-        await bot.start(token="")
+        await bot.start(token='')
 
 
 asyncio.run(main())

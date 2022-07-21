@@ -26,24 +26,24 @@ from typing_extensions import NotRequired
 
 __all__ = (
     # Received
-    "VoiceUpdateData",
-    "PlayData",
-    "SetPauseStateData",
-    "SetPositionData",
-    "SetFilterData",
+    'VoiceUpdateData',
+    'PlayData',
+    'SetPauseStateData',
+    'SetPositionData',
+    'SetFilterData',
 
-    "ReceivedPayloadOp",
-    "ReceivedPayload",
+    'ReceivedPayloadOp',
+    'ReceivedPayload',
 
     # Sent
-    "EventData",
+    'EventData',
 
-    "SentPayloadOp",
-    "SentPayload",
+    'SentPayloadOp',
+    'SentPayload',
 
     # Final
-    "PayloadHandlers",
-    "Payload",
+    'PayloadHandlers',
+    'Payload',
 )
 
 
