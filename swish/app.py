@@ -66,8 +66,8 @@ class App(aiohttp.web.Application):
         )
         await runner.setup()
 
-        host = CONFIG['SERVER']['host']
-        port = CONFIG['SERVER']['port']
+        host = CONFIG.server.host
+        port = CONFIG.server.port
 
         site = aiohttp.web.TCPSite(
             runner=runner,
@@ -101,7 +101,7 @@ class App(aiohttp.web.Application):
             await websocket.close(code=4000, message=b'Missing \'User-Id\' header.')
             return websocket
 
-        password: str = CONFIG['SERVER']['password']
+        password: str = CONFIG.server.password
         authorization: str | None = request.headers.get('Authorization')
         if password != authorization:
             LOG.error(f'{client_name} - Websocket connection failed due to mismatched \'Authorization\' header.')
@@ -181,10 +181,10 @@ class App(aiohttp.web.Application):
     }
 
     _SOURCE_MAPPING: dict[str, str] = {
-        'youtube':    f'ytsearch{CONFIG["SEARCH"]["max_results"]}:',
-        'soundcloud': f'scsearch{CONFIG["SEARCH"]["max_results"]}:',
-        'niconico':   f'nicosearch{CONFIG["SEARCH"]["max_results"]}:',
-        'bilibili':   f'bilisearch{CONFIG["SEARCH"]["max_results"]}:',
+        'youtube':    f'ytsearch{CONFIG.search.max_results}:',
+        'soundcloud': f'scsearch{CONFIG.search.max_results}:',
+        'niconico':   f'nicosearch{CONFIG.search.max_results}:',
+        'bilibili':   f'bilisearch{CONFIG.search.max_results}:',
         'none':       ''
     }
 

@@ -1,20 +1,21 @@
-[SERVER]
-host = '127.0.0.1'
+[server]
+host = "127.0.0.1"
 port = 8000
-password = 'helloworld!'
+password = "helloworld!"
 
-[IP]
+[rotation]
+enabled = false
+method = "nanosecond-rotator"
 blocks = []
 
-[SEARCH]
+[search]
 max_results = 10
 
-[LOGGING]
-path = 'logs/'
+[logging]
+path = "logs/"
 backup_count = 5
-max_bytes = 5242880  # 5mb
+max_bytes = 5242880
 
-[LOGGING.LEVEL]
-swish = 'DEBUG'
-discord = 'NOTSET'
-aiohttp = 'NOTSET'
+[logging.levels]
+swish = "DEBUG"
+aiohttp = "NOTSET"

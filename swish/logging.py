@@ -71,12 +71,12 @@ def setup_logging() -> None:
         'swish':   logging.getLogger('swish'),
         'aiohttp': logging.getLogger('aiohttp'),
     }
-    loggers['swish'].setLevel(CONFIG['LOGGING']['LEVEL']['swish'])
-    loggers['aiohttp'].setLevel(CONFIG['LOGGING']['LEVEL']['aiohttp'])
+    loggers['swish'].setLevel(CONFIG.logging.levels.swish)
+    loggers['aiohttp'].setLevel(CONFIG.logging.levels.aiohttp)
 
     for name, logger in loggers.items():
 
-        path = CONFIG['LOGGING']['path']
+        path = CONFIG.logging.path
 
         if not os.path.exists(path):
             os.makedirs(path)
@@ -85,8 +85,8 @@ def setup_logging() -> None:
         file_handler = logging.handlers.RotatingFileHandler(
             filename=f'{path}{name}.log',
             mode='w',
-            maxBytes=CONFIG['LOGGING']['max_bytes'],
-            backupCount=CONFIG['LOGGING']['backup_count'],
+            maxBytes=CONFIG.logging.max_bytes,
+            backupCount=CONFIG.logging.backup_count,
             encoding='utf-8',
         )
         file_handler.setFormatter(ColourFormatter(enabled=False))

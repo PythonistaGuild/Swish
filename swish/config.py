@@ -15,57 +15,97 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from __future__ import annotations
 
-import logging
-from typing import Any
+import dataclasses
+import sys
+from typing import Any, Literal
 
+import dacite
 import toml
 
 
-LOG: logging.Logger = logging.getLogger('swish.config')
-
-
 __all__ = (
-    'setup_config',
     'CONFIG',
 )
 
-
-def setup_config() -> dict[str, Any]:
-
-    try:
-        config = toml.load('swish.toml')
-        LOG.info('Successfully loaded swish.toml configuration.')
-
-    except (toml.TomlDecodeError, FileNotFoundError, IOError):
-        config: dict[str, Any] = {
-            'SERVER':  {
-                'host':     '127.0.0.1',
-                'port':     8000,
-                'password': 'helloworld!'
-            },
-            'IP':      {
-                'blocks': []
-            },
-            'SEARCH':  {
-                'max_results': 10
-            },
-            'LOGGING': {
-                'path':         'logs/',
-                'backup_count': 5,
-                'max_bytes':    5242880,
-                'LEVEL':        {
-                    'swish':   'DEBUG',
-                    'discord': 'NOTSET',
-                    'aiohttp': 'NOTSET'
-                }
-            }
-
+DEFAULT: dict[str, Any] = {
+    'server':   {
+        'host':     '127.0.0.1',
+        'port':     8000,
+        'password': 'helloworld!'
+    },
+    'rotation': {
+        'enabled': False,
+        'method':  'nanosecond-rotator',
+        'blocks':  []
+    },
+    'search':   {
+        'max_results': 10
+    },
+    'logging':  {
+        'path':         'logs/',
+        'backup_count': 5,
+        'max_bytes':    (2 ** 20) * 5,
+        'levels':       {
+            'swish':   'DEBUG',
+            'aiohttp': 'NOTSET'
         }
-        LOG.error('Could not find or load swish.toml, using default values.')
+    }
+}
 
-    return config
+
+@dataclasses.dataclass
+class Server:
+    host: str
+    port: int
+    password: str
 
 
-CONFIG: dict[str, Any] = setup_config()
+@dataclasses.dataclass
+class Rotation:
+    enabled: bool
+    method: Literal['nanosecond-rotator', 'ban-rotator']
+    blocks: list[str]
+
+
+@dataclasses.dataclass
+class Search:
+    max_results: int
+
+
+@dataclasses.dataclass
+class LoggingLevels:
+    swish: Literal['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'NOTSET']
+    aiohttp: Literal['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'NOTSET']
+
+
+@dataclasses.dataclass
+class Logging:
+    path: str
+    backup_count: int
+    max_bytes: int
+    levels: LoggingLevels
+
+
+@dataclasses.dataclass
+class Config:
+    server: Server
+    rotation: Rotation
+    search: Search
+    logging: Logging
+
+
+try:
+    CONFIG: Config = dacite.from_dict(Config, toml.load('swish.toml'))
+
+except (toml.TomlDecodeError, FileNotFoundError):
+
+    with open('swish.toml', 'w') as fp:
+        toml.dump(DEFAULT, fp)
+
+    print('Could not find or parse swish.toml, using default configuration values.')
+    CONFIG: Config = dacite.from_dict(Config, DEFAULT)
+
+
+except dacite.DaciteError as error:
+    sys.exit(f'Your swish.toml configuration file is invalid: {str(error).capitalize()}.')

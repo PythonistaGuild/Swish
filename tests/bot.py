@@ -6,11 +6,10 @@ from typing import Any
 import aiohttp
 import discord
 import discord.types.voice
-import toml
 from discord.ext import commands
 
 
-CONFIG: dict[str, Any] = toml.load('../swish.toml')  # type: ignore
+from swish.config import CONFIG
 
 
 class Bot(commands.Bot):
@@ -37,9 +36,9 @@ class Bot(commands.Bot):
 
         self.session = aiohttp.ClientSession()
         self.websocket = await self.session.ws_connect(
-            url=f'ws://{CONFIG["SERVER"]["host"]}:{CONFIG["SERVER"]["port"]}',
+            url=f'ws://{CONFIG.server.host}:{CONFIG.server.port}',
             headers={
-                'Authorization': CONFIG['SERVER']['password'],
+                'Authorization': CONFIG.server.password,
                 'User-Agent':    'Python/v3.10.1,swish.py/v0.0.1a',
                 'User-Id':       str(self.user.id),
             },
