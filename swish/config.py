@@ -97,7 +97,7 @@ class Config:
 
 
 try:
-    CONFIG: Config = dacite.from_dict(Config, toml.load('../swish.toml'))
+    CONFIG: Config = dacite.from_dict(Config, toml.load('swish.toml'))
 
 except (toml.TomlDecodeError, FileNotFoundError):
 
