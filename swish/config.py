@@ -96,17 +96,21 @@ class Config:
     logging: Logging
 
 
-try:
-    CONFIG: Config = dacite.from_dict(Config, toml.load('swish.toml'))
+def load_config() -> Config:
 
-except (toml.TomlDecodeError, FileNotFoundError):
+    try:
+        return dacite.from_dict(Config, toml.load('swish.toml'))
 
-    with open('swish.toml', 'w') as fp:
-        toml.dump(DEFAULT_CONFIG, fp)
+    except (toml.TomlDecodeError, FileNotFoundError):
 
-    print('Could not find or parse swish.toml, using default configuration values.')
-    CONFIG: Config = dacite.from_dict(Config, DEFAULT_CONFIG)
+        with open('swish.toml', 'w') as fp:
+            toml.dump(DEFAULT_CONFIG, fp)
+
+        print('Could not find or parse swish.toml, using default configuration values.')
+        return dacite.from_dict(Config, DEFAULT_CONFIG)
+
+    except dacite.DaciteError as error:
+        sys.exit(f'Your swish.toml configuration file is invalid: {str(error).capitalize()}.')
 
 
-except dacite.DaciteError as error:
-    sys.exit(f'Your swish.toml configuration file is invalid: {str(error).capitalize()}.')
+CONFIG: Config = load_config()
