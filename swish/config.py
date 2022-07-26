@@ -28,7 +28,8 @@ __all__ = (
     'CONFIG',
 )
 
-DEFAULT: dict[str, Any] = {
+
+DEFAULT_CONFIG: dict[str, Any] = {
     'server':   {
         'host':     '127.0.0.1',
         'port':     8000,
@@ -96,15 +97,15 @@ class Config:
 
 
 try:
-    CONFIG: Config = dacite.from_dict(Config, toml.load('swish.toml'))
+    CONFIG: Config = dacite.from_dict(Config, toml.load('../swish.toml'))
 
 except (toml.TomlDecodeError, FileNotFoundError):
 
     with open('swish.toml', 'w') as fp:
-        toml.dump(DEFAULT, fp)
+        toml.dump(DEFAULT_CONFIG, fp)
 
     print('Could not find or parse swish.toml, using default configuration values.')
-    CONFIG: Config = dacite.from_dict(Config, DEFAULT)
+    CONFIG: Config = dacite.from_dict(Config, DEFAULT_CONFIG)
 
 
 except dacite.DaciteError as error:

@@ -25,14 +25,27 @@ from typing import Any, TYPE_CHECKING
 
 import aiohttp
 import aiohttp.web
-from discord.backoff import ExponentialBackoff
+import discord.backoff
 from discord.ext.native_voice import native_voice  # type: ignore
 
-from .types.payloads import *
-
+from .types.payloads import (
+    PayloadHandlers,
+    ReceivedPayload,
+    SentPayloadOp,
+    VoiceUpdateData,
+    PlayData,
+    SetPauseStateData,
+    SetPositionData,
+    SetFilterData,
+)
 
 if TYPE_CHECKING:
     from .app import App
+
+
+__all__ = (
+    'Player',
+)
 
 
 LOG: logging.Logger = logging.getLogger('swish.player')
@@ -105,7 +118,7 @@ class Player:
     async def _reconnect_handler(self) -> None:
 
         loop = asyncio.get_running_loop()
-        backoff = ExponentialBackoff()
+        backoff = discord.backoff.ExponentialBackoff()
 
         while True:
 

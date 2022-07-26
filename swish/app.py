@@ -32,17 +32,17 @@ import yarl
 import yt_dlp
 
 from .config import CONFIG
-from .rotator import IpRotator
 from .player import Player
-from .types.payloads import *
-
-
-LOG: logging.Logger = logging.getLogger('swish.app')
+from .rotator import BanRotator, NanosecondRotator
+from .types.payloads import ReceivedPayload
 
 
 __all__ = (
     'App',
 )
+
+
+LOG: logging.Logger = logging.getLogger('swish.app')
 
 
 class App(aiohttp.web.Application):
@@ -188,10 +188,16 @@ class App(aiohttp.web.Application):
         'none':       ''
     }
 
+    _ROTATOR_MAPPING: dict[str, type[NanosecondRotator] | type[BanRotator]] = {
+        'nanosecond-rotator': NanosecondRotator,
+        'ban-rotator':        BanRotator
+    }
+
     async def _ytdl_search(self, query: str, internal: bool) -> Any:
 
-        self._SEARCH_OPTIONS['source_address'] = IpRotator.rotate()
         self._SEARCH_OPTIONS['extract_flat'] = not internal
+        if CONFIG.rotation.enabled:
+            self._SEARCH_OPTIONS['source_address'] = self._ROTATOR_MAPPING[CONFIG.rotation.method].rotate()
 
         with yt_dlp.YoutubeDL(self._SEARCH_OPTIONS) as YTDL:
             with contextlib.redirect_stdout(open(os.devnull, 'w')):
@@ -216,7 +222,6 @@ class App(aiohttp.web.Application):
         tracks: list[dict[str, Any]] = []
 
         for entry in entries:
-
             info: dict[str, Any] = {
                 'title':      entry['title'],
                 'identifier': entry['id'],
