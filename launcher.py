@@ -17,33 +17,37 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from __future__ import annotations
 
+import asyncio
 
-banner: str = """
-######################################################
-##   (`-').->     .->     _      (`-').-> (`-').->  ##
-##   ( OO)_   (`(`-')/`) (_)     ( OO)_   (OO )__   ##
-##  (_)--\_) ,-`( OO).', ,-(`-')(_)--\_) ,--. ,'-'  ##
-##  /    _ / |  |\  |  | | ( OO)/    _ / |  | |  |  ##
-##  \_..`--. |  | '.|  | |  |  )\_..`--. |  `-'  |  ##
-##  .-._)   \|  |.'.|  |(|  |_/ .-._)   \|  .-.  |  ##
-##  \       /|   ,'.   | |  |'->\       /|  | |  |  ##
-##   `-----' `--'   '--' `--'    `-----' `--' `--'  ##
-## VERSION: 0.0.1alpha0 - BUILD: N/A                ##
-###################################################### 
+import swish
+from swish.app import App
+from swish.logging import setup_logging
+
+
+banner: str = rf"""
+                __        _      
+              _/  \    _(\(o     
+             /     \  /  _  ^^^o 
+            /   !   \/  ! '!!!v' 
+           !  !  \ _' ( \____    
+           ! . \ _!\   \===^\)   
+            \ \_!  / __!         
+         .   \!   /    \         
+       (\_      _/   _\ )        
+        \ ^^--^^ __-^ /(__       
+         ^^----^^    "^--v'\
+----------------------------------------------------------------------         
+Swish - The standalone audio player and server for bots on Discord.
+Version: {swish.__version__}
+----------------------------------------------------------------------
 """
 print(banner)
 
 
-import asyncio
-loop: asyncio.AbstractEventLoop = asyncio.new_event_loop()
-
-
-from swish.logging import setup_logging
 setup_logging()
-
-
-from swish.app import App
 app: App = App()
+
+loop: asyncio.AbstractEventLoop = asyncio.new_event_loop()
 
 
 try:
