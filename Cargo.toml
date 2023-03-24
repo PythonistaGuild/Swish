@@ -12,3 +12,5 @@ license = "AGPL-3"
 actix-web = "~4"
 actix-web-actors = "~4"
 symphonia = "~0.5"
+toml = "~0.7"
+serde = {version = "~1", features = ["derive"]}
