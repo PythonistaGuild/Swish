@@ -1,0 +1,7 @@
+aiohttp>=3.7.4,<4
+colorama>=0.4.0
+typing_extensions==4.3.0
+yt-dlp>=2022.7.0
+dacite==1.6.0
+discord.py>=2.2.2
+toml
