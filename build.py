@@ -35,14 +35,6 @@ args: list[str] = [
     '--onefile',
 ]
 
-if platform != 'Linux':
-    args.extend(
-        (
-            '--add-binary',
-            './bin/ffmpeg.exe;.' if platform.system() == 'Windows' else './bin/ffmpeg:.'
-        )
-    )
-
 
 import PyInstaller.__main__
 PyInstaller.__main__.run(args)
